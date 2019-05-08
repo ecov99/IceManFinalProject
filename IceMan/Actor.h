@@ -12,24 +12,27 @@ class Actor : public GraphObject
 public:
 	Actor(StudentWorld* sw, int imageID, int startX, int startY, Direction dir = right, double size = 1.0, unsigned int depth = 0)
 		: GraphObject(imageID, startX, startY, dir, size, depth), alive_(true), sw_(sw), annoyed_(false), hitPoints_(10),
-		waterUnits_(5), solarCharge_(1), goldNuggetWallet_(0) {}
+		waterUnits_(5), sonarCharge_(1), goldNuggetWallet_(0), barrelCount(0) {}
 	Actor(StudentWorld* sw, int x, int y) : GraphObject(NULL, x, y, Actor::right, 1, 0) {}
 	
 	
 	virtual ~Actor() {}
-	
+	virtual int getHealth();
+	virtual int getSquirts();
+	virtual int getGold();
+	virtual int getBarrelsLeft();
+	virtual int getSonar();
 private:
 	bool alive_;
 	int hitPoints_;
 	bool annoyed_;
 	int waterUnits_;
-	int solarCharge_;
+	int sonarCharge_;
 	int goldNuggetWallet_;
+	int barrelCount;
 	
 
 	StudentWorld* sw_;
-	
-
 };
 
 class Iceman : public Actor
@@ -44,20 +47,22 @@ public:
 	virtual void doSomething()
 	{
 	}
+
+	int getHealth();
 private:
 
 };
 class Ice : public Actor
 {
 public:
-	//10 and 60 are dummy variables
-	Ice(StudentWorld* sw, int x, int y) :Actor(sw, IID_ICE, x, y, Actor::right, .25, 3) {
+	Ice(StudentWorld* sw, int x, int y) :Actor(sw, IID_ICE, x, y, Actor::right, .25, 3)
+	{
 		GraphObject::setVisible(true);
 	}
 	~Ice() {}
 	virtual void doSomething()
 	{
-
+		//doSomething Function serves no purpose
 	}
 };
 class Protestor : public Actor
@@ -93,7 +98,7 @@ class GoldNugget : public Actor
 
 };
 
-class SolarKit : public Actor
+class SonarKit : public Actor
 {
 
 };

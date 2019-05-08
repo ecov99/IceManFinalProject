@@ -37,6 +37,13 @@ public:
 
 		//Step 2) Construct new oil field that meets new level requirements 
 		//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
+
+		int B = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
+
+		int G = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
+
+		int L = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
+
 		iceField.resize(60, std::vector<std::shared_ptr<Ice>>(60));
 		for (int i = 0; i < 60; i++) //rows
 		{
@@ -54,12 +61,7 @@ public:
 			}
 		}
 
-		int B = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
-
-		int G = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
-
-		int L = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
-
+		
 		//Step 3) Allocate and insert a valid Iceman object into the game world at the proper location
 		player_  = std::make_unique<Iceman>(this);
 		return GWSTATUS_CONTINUE_GAME;
@@ -72,9 +74,51 @@ public:
 		//Responsible for deleting objects that need to disappear
 		// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 		// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
+		
+		//Update the game status line
+		int level = GameWorld::getLevel();
+		int lives = GameWorld::getLives();
+		int health = player_->getHealth();
+		int squirts = player_->getSquirts();
+		int gold = player_->getGold();
+		int barrelsLeft = player_->getBarrelsLeft();
+		int sonar = player_->getSonar();
+		int score = GameWorld::getScore();
+		std::string s = "Lvl: " + std::to_string(level) + " Lives: " + std::to_string(lives) +
+			" Hlth: " + std::to_string(health) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
+			std::to_string(gold) + " Oil Left: " + std::to_string(barrelsLeft) + " Sonar: " +
+			std::to_string(sonar) + " Scr: " + std::to_string(score);
+		setGameStatText(s);
+
+		//Give each Actor a chance to do something
+		//for(each actor in game world)
+		//{
+		//	if(actor[i] is active)
+		//	{
+		//		tellThisActorToDoSomething(actor[i]);
+		//		if(thePlayerDiedDuringThisTick() == true)
+		//		{
+		//			return GWSTATUS_PLAYER_DIED;
+		//		}
+		//		if(thePlayerCompletedTheCurrentLevel() == true)
+		//		{
+		//			return GWSTATUS_FINISHED_LEVEL;
+		//		}
+		//	}
+		//}
+		//Remove newly dead actors after each tick
+		//removeDeadGameObject();// delete dead game objects
+		//if (thePlayerDiedDuringThisTick() == true)
+		//	{
+		//		decLives();
+		//		return GWSTATUS_PLAYER_DIED;
+		//	}
+		//if (thePlayerCompletedTheCurrentLevel() == true)
+		//{
+		//	playFinishedLevelSound();	
+		//	return GWSTATUS_FINISHED_LEVEL;
+		//}
 		return GWSTATUS_CONTINUE_GAME;
-		decLives();
-		return GWSTATUS_PLAYER_DIED;
 	}
 
 	virtual void cleanUp()
@@ -89,6 +133,7 @@ private:
 	std::shared_ptr<Actor> actorP_; //Actor smartPointer
 	std::vector<std::vector<std::shared_ptr<Actor>>> oilField; //Creates a 2D vector array of Actor smart pointers
 	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
+	std::vector < std::shared_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
 };
 
 #endif // STUDENTWORLD_H_
