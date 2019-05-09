@@ -17,11 +17,16 @@ public:
 	
 	
 	virtual ~Actor() {}
+
+	virtual void doSomething() {}
+	virtual bool hasDied();
+	virtual bool hasCompletedLevel();
 	virtual int getHealth();
 	virtual int getSquirts();
 	virtual int getGold();
 	virtual int getBarrelsLeft();
 	virtual int getSonar();
+	virtual StudentWorld* getWorld();
 private:
 	bool alive_;
 	int hitPoints_;
@@ -33,6 +38,7 @@ private:
 	
 
 	StudentWorld* sw_;
+	
 };
 
 class Iceman : public Actor
@@ -44,13 +50,12 @@ public:
 	}
 	
 	~Iceman() {}
-	virtual void doSomething()
-	{
-	}
+	virtual void doSomething();
+	
 
 	int getHealth();
 private:
-
+	
 };
 class Ice : public Actor
 {

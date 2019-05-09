@@ -38,20 +38,20 @@ public:
 		//Step 2) Construct new oil field that meets new level requirements 
 		//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
 
-		int B = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
+		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
 
-		int G = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
+		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
 
-		int L = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
+		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
 
-		iceField.resize(60, std::vector<std::shared_ptr<Ice>>(60));
+		iceField.resize(64, std::vector<std::shared_ptr<Ice>>(64));
 		for (int i = 0; i < 60; i++) //rows
 		{
 			for (int j = 0; j < 30; j++) //left side
 			{
 				iceField[j][i] = std::make_shared<Ice>(this, j, i);
 			}
-			for (int k = 34; k < 60; k++) //right side
+			for (int k = 34; k < 64; k++) //right side
 			{
 				iceField[k][i] = std::make_shared<Ice>(this, k, i);
 			}
@@ -63,7 +63,12 @@ public:
 
 		
 		//Step 3) Allocate and insert a valid Iceman object into the game world at the proper location
-		player_  = std::make_unique<Iceman>(this);
+		//player WILL ALWAYS BE currentActorVector[0]
+		if (currentActorVector.empty())
+		{
+			currentActorVector.resize(1);
+			currentActorVector[0] = std::make_unique<Iceman>(this);
+		}
 		return GWSTATUS_CONTINUE_GAME;
 	}
 
@@ -78,62 +83,75 @@ public:
 		//Update the game status line
 		int level = GameWorld::getLevel();
 		int lives = GameWorld::getLives();
-		int health = player_->getHealth();
-		int squirts = player_->getSquirts();
-		int gold = player_->getGold();
-		int barrelsLeft = player_->getBarrelsLeft();
-		int sonar = player_->getSonar();
+		int health = currentActorVector[0]->getHealth();
+		int squirts = currentActorVector[0]->getSquirts();
+		int gold = currentActorVector[0]->getGold();
+		int barrelsLeft = barrelsRemaining;
+		int sonar = currentActorVector[0]->getSonar();
 		int score = GameWorld::getScore();
 		std::string s = "Lvl: " + std::to_string(level) + " Lives: " + std::to_string(lives) +
-			" Hlth: " + std::to_string(health) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
+			" Hlth: " + std::to_string(health * 10) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
 			std::to_string(gold) + " Oil Left: " + std::to_string(barrelsLeft) + " Sonar: " +
 			std::to_string(sonar) + " Scr: " + std::to_string(score);
 		setGameStatText(s);
 
 		//Give each Actor a chance to do something
 		//for(each actor in game world)
-		//{
-		//	if(actor[i] is active)
-		//	{
-		//		tellThisActorToDoSomething(actor[i]);
-		//		if(thePlayerDiedDuringThisTick() == true)
-		//		{
-		//			return GWSTATUS_PLAYER_DIED;
-		//		}
-		//		if(thePlayerCompletedTheCurrentLevel() == true)
-		//		{
-		//			return GWSTATUS_FINISHED_LEVEL;
-		//		}
-		//	}
-		//}
+		for(int i = 0; i < currentActorVector.size(); i++)
+		{
+			if(currentActorVector[i]->getHealth() > 0)//If currentActor is alive
+			{
+				currentActorVector[i]->doSomething();//tellThisActorToDoSomething(actor[i]);
+
+				if(currentActorVector[0]->hasDied())//if(thePlayerDiedDuringThisTick() == true)
+				{
+					decLives();
+					return GWSTATUS_PLAYER_DIED;
+				}
+				if(currentActorVector[0]->hasCompletedLevel())//if(thePlayerCompletedCurrentLevel == true)
+				{
+					//playFinishedLevelSound()
+					return GWSTATUS_FINISHED_LEVEL;
+				}
+			}
+		}
 		//Remove newly dead actors after each tick
 		//removeDeadGameObject();// delete dead game objects
-		//if (thePlayerDiedDuringThisTick() == true)
-		//	{
-		//		decLives();
-		//		return GWSTATUS_PLAYER_DIED;
-		//	}
-		//if (thePlayerCompletedTheCurrentLevel() == true)
-		//{
-		//	playFinishedLevelSound();	
-		//	return GWSTATUS_FINISHED_LEVEL;
-		//}
+		if (currentActorVector[0]->hasDied())//if(thePlayerDiedDuringThisTick() == true)
+		{
+			decLives();
+			return GWSTATUS_PLAYER_DIED;
+		}
+		if (currentActorVector[0]->hasCompletedLevel())//if(thePlayerCompletedCurrentLevel == true)
+		{
+			//playFinishedLevelSound()
+			return GWSTATUS_FINISHED_LEVEL;
+		}
 		return GWSTATUS_CONTINUE_GAME;
 	}
-
+	
 	virtual void cleanUp()
 	{
 		//Function is called when Player loses a life or completes the current level
 		//Deletes all Actors that are currently active
 	}
 
+	int getBarrelsRemaining() //Helper function used to detect if player has completed level
+	{
+		return barrelsRemaining;
+	}
 
 private:
-	std::unique_ptr<Iceman> player_; //Iceman object
+	
 	std::shared_ptr<Actor> actorP_; //Actor smartPointer
 	std::vector<std::vector<std::shared_ptr<Actor>>> oilField; //Creates a 2D vector array of Actor smart pointers
 	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
-	std::vector < std::shared_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
+	std::vector<std::unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
+
+	int goldRemaining;
+	int barrelsRemaining;
+	int bouldersRemaining;
+
 };
 
 #endif // STUDENTWORLD_H_
