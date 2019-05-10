@@ -7,6 +7,11 @@ GameWorld* createStudentWorld(string assetDir)
 	return new StudentWorld(assetDir);
 }
 
+int StudentWorld::getBarrelsRemaining()
+{
+	return barrelsRemaining;
+}
+
 int StudentWorld::genRandNumber()
 {
 	int num;

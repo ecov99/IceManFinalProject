@@ -11,12 +11,10 @@
 #include <ctime>
 #include <cstdlib>
 
-// Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
 {
 public:
-	std::vector<std::vector<std::shared_ptr<Actor>>> oilField; //Creates a 2D vector array of Actor smart pointers
 	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
 	std::vector<std::unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
 
@@ -29,6 +27,7 @@ public:
 	// Personal Functions
 	int genRandNumber();
 	void setDisplayText();
+	int getBarrelsRemaining();
 
 	virtual int init()
 	{
@@ -36,28 +35,17 @@ public:
 		//Constructs a virtual representation of of current level with vector<vector<object>>
 		//Function is called when game starts, player completes level, player loses life(not not all lives)
 
-		//Step 1) Initialize data structure that is used to keep track of virtual world
-
-		//oilField.resize(64, std::vector<std::shared_ptr<Actor>>(64, actorP_));
-		//for (int y = 0; y < 64; y++)
-		//{
-		//	for (int x = 0; x < 64; x++)
-		//	{
-		//		oilField[x][y] = std::make_shared<Actor>(this, x, y); //Creates a 64 x 64 2D vector of Actor smart_pointer objects
-		//	}
-		//}
-
-		//Step 3) Allocate and insert a valid Iceman object into the game world at the proper location
-		//player WILL ALWAYS BE currentActorVector[0]
+		//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
+		// Player WILL ALWAYS BE currentActorVector[0]
 		if (currentActorVector.empty())
 		{
 			currentActorVector.resize(1);
 			currentActorVector[0] = std::make_unique<Iceman>(this);
 			//currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
 		}
+
 		//Step 2) Construct new oil field that meets new level requirements 
 		//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-
 		iceField.resize(64, std::vector<std::shared_ptr<Ice>>(64));
 		for (int i = 0; i < 60; i++) //rows
 		{
@@ -115,11 +103,8 @@ public:
 		}
 
 		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
-
 		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
 
-	
-	
 		return GWSTATUS_CONTINUE_GAME;
 	}
 
@@ -173,13 +158,9 @@ public:
 	{
 		//Function is called when Player loses a life or completes the current level
 		//Deletes all Actors that are currently active
+		iceField.clear();
+		currentActorVector.clear();
 	}
-
-	int getBarrelsRemaining() //Helper function used to detect if player has completed level
-	{
-		return barrelsRemaining;
-	}
-
 
 private:
 	
