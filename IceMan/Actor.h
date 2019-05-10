@@ -85,7 +85,7 @@ class HardcoreProtestor : public Protestor
 
 };
 
-class Squrit : public Actor
+class Squirt : public Actor
 {
 
 };
