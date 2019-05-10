@@ -20,11 +20,16 @@ public:
 	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
 	std::vector<std::unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
 
+
 	StudentWorld(std::string assetDir)
 		: GameWorld(assetDir)
 	{
 	}
+
+	// Personal Functions
 	int genRandNumber();
+	void setDisplayText();
+
 	virtual int init()
 	{
 		//Populates current level "oilField" with ice, boulders, oilBarrels, goldNuggets
@@ -119,19 +124,7 @@ public:
 		// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 		
 		//Update the game status line
-		int level = GameWorld::getLevel();
-		int lives = GameWorld::getLives();
-		int health = currentActorVector[0]->getHealth();
-		int squirts = currentActorVector[0]->getSquirts();
-		int gold = currentActorVector[0]->getGold();
-		int barrelsLeft = barrelsRemaining;
-		int sonar = currentActorVector[0]->getSonar();
-		int score = GameWorld::getScore();
-		std::string s = "Lvl: " + std::to_string(level) + " Lives: " + std::to_string(lives) +
-			" Hlth: " + std::to_string(health * 10) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
-			std::to_string(gold) + " Oil Left: " + std::to_string(barrelsLeft) + " Sonar: " +
-			std::to_string(sonar) + " Scr: " + std::to_string(score);
-		setGameStatText(s);
+		setDisplayText();
 
 		//Give each Actor a chance to do something
 		//for(each actor in game world)
@@ -178,9 +171,6 @@ public:
 	{
 		return barrelsRemaining;
 	}
-
-
-
 
 
 private:
