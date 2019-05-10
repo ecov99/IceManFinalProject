@@ -1,6 +1,9 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
+/*
+	Actor Class
+*/
 bool Actor::hasDied()
 {
 	if (getHealth() > 0)
@@ -59,7 +62,9 @@ StudentWorld* Actor::getWorld()
 
 
 
-
+/*
+	IceMan Class
+*/
 void Iceman::doSomething()
 {
 	//Detecting if Player is overlaying a visible Ice Object
@@ -145,6 +150,9 @@ int Iceman::getHealth()
 	return Actor::getHealth();
 }
 
+/*
+	Boulder Class
+*/
 void Boulder::doSomething()
 {
 	if (isAlive())

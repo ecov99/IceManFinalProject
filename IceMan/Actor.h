@@ -6,6 +6,9 @@
 
 class StudentWorld;
 
+/*
+	Actor Class
+*/
 class Actor : public GraphObject
 {
 public:
@@ -42,6 +45,9 @@ private:
 	
 };
 
+/*
+	IceMan Class
+*/
 class Iceman : public Actor
 {
 public:
@@ -59,6 +65,9 @@ private:
 	
 };
 
+/*
+	Ice Class
+*/
 class Ice : public Actor
 {
 public:
@@ -73,31 +82,49 @@ public:
 	}
 };
 
+/*
+	Protestor
+*/
 class Protestor : public Actor
 {
 
 };
 
+/*
+	RegularProtestor Class
+*/
 class RegularProtestor : public Protestor
 {
 
 };
 
+/*
+	HardcoreProtestor Class
+*/
 class HardcoreProtestor : public Protestor
 {
 
 };
 
+/*
+	Squirt Class
+*/
 class Squirt : public Actor
 {
 
 };
 
+/*
+	Barrel Class
+*/
 class Barrel : public Actor
 {
-
+	
 };
 
+/*
+	Boulder Class
+*/
 class Boulder : public Actor
 {
 public:
@@ -110,16 +137,25 @@ public:
 
 };
 
+/*
+	GoldNugget Class
+*/
 class GoldNugget : public Actor
 {
 
 };
 
+/*
+	SonarKit Class
+*/
 class SonarKit : public Actor
 {
 
 };
 
+/*
+	Water Class
+*/
 class Water : public Actor
 {
 
