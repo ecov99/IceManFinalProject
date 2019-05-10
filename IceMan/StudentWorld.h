@@ -98,6 +98,14 @@ public:
 			}
 			if (isCovered)
 			{
+				for (int h = 0; h < 4; h++)
+				{
+					for (int g = 0; g < 4; g++)
+					{
+						iceField[x + g][y + h].reset();
+						iceField[x + g][y + h] = nullptr;
+					}
+				}
 				currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
 			}
 			else

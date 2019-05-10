@@ -138,6 +138,7 @@ void Iceman::doSomething()
 			break;
 		case KEY_PRESS_ESCAPE:
 			//Exit level
+			
 			break;
 		}
 	}
@@ -150,33 +151,33 @@ int Iceman::getHealth()
 
 void Boulder::doSomething()
 {
-	if (isAlive())
+	bool isStable = true;
+	int count = 0;
+	for (int h = 0; h < 4; h++)
 	{
-		bool isStable = true;
-		for (int h = 0; h < 4; h++)
+		for (int g = 0; g < 4; g++)
 		{
-			for (int g = 0; g < 4; g++)
+			if (getWorld()->iceField[getX() + g][getY() -1 - h] == nullptr)
 			{
-				if (getWorld()->iceField[getX() + g][getY() - h] == nullptr)
-				{
-					isStable = false;
-				}
+				count++;
 			}
-		}
-		if (!isStable)
-		{
-			while (getWorld()->iceField[getX()][getY() - 1] == nullptr)
-			{
-				if (getY() > 0)
-				{
-					moveTo(getX(), getY() - 1);
-				}
-			}
-			setAlive(false);
 		}
 	}
-	else
+	if (count == 16)
 	{
-		return;
+		isStable = false;
+	}
+	if (!isStable)
+	{
+		while (getWorld()->iceField[getX()][getY() - 1] == nullptr)
+		{
+			if (getY() > 0) // error when falling out of the scope
+			{
+				getWorld()->playSound(SOUND_FALLING_ROCK);
+				moveTo(getX(), getY() - 1);
+			}
+		}
+		setAlive(false);
 	}
 }
+	
