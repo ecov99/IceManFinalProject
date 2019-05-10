@@ -20,6 +20,7 @@ public:
 
 	virtual void doSomething() {}
 	virtual bool hasDied();
+	virtual bool isAlive();
 	virtual bool hasCompletedLevel();
 	virtual int getHealth();
 	virtual int getSquirts();
@@ -95,6 +96,13 @@ class Barrel : public Actor
 
 class Boulder : public Actor
 {
+public:
+	Boulder(StudentWorld* sw, int x, int y) : Actor(sw, IID_BOULDER, x, y, Actor::down, 1, 1)
+	{
+		GraphObject::setVisible(true);
+	}
+	~Boulder() {}
+	virtual void doSomething() {}
 
 };
 

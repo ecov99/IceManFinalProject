@@ -8,17 +8,23 @@
 #include <vector>
 #include <memory>
 #include <math.h>
+#include <ctime>
+#include <cstdlib>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
 {
 public:
+	std::vector<std::vector<std::shared_ptr<Actor>>> oilField; //Creates a 2D vector array of Actor smart pointers
+	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
+	std::vector<std::unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
+
 	StudentWorld(std::string assetDir)
 		: GameWorld(assetDir)
 	{
 	}
-
+	int genRandNumber();
 	virtual int init()
 	{
 		//Populates current level "oilField" with ice, boulders, oilBarrels, goldNuggets
@@ -26,19 +32,21 @@ public:
 		//Function is called when game starts, player completes level, player loses life(not not all lives)
 
 		//Step 1) Initialize data structure that is used to keep track of virtual world
-		oilField.resize(64, std::vector<std::shared_ptr<Actor>>(64, actorP_));
-		for (int y = 0; y < 64; y++)
-		{
-			for (int x = 0; x < 64; x++)
-			{
-				oilField[x][y] = std::make_shared<Actor>(this, x, y); //Creates a 64 x 64 2D vector of Actor smart_pointer objects
-			}
-		}
+
+		//oilField.resize(64, std::vector<std::shared_ptr<Actor>>(64, actorP_));
+		//for (int y = 0; y < 64; y++)
+		//{
+		//	for (int x = 0; x < 64; x++)
+		//	{
+		//		oilField[x][y] = std::make_shared<Actor>(this, x, y); //Creates a 64 x 64 2D vector of Actor smart_pointer objects
+		//	}
+		//}
 
 		//Step 2) Construct new oil field that meets new level requirements 
 		//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
 
 		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
+		
 
 		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
 
@@ -50,6 +58,10 @@ public:
 			for (int j = 0; j < 30; j++) //left side
 			{
 				iceField[j][i] = std::make_shared<Ice>(this, j, i);
+			}
+			for (int p = 31; p < 34; p++)
+			{
+				iceField[p][i] = nullptr;
 			}
 			for (int k = 34; k < 64; k++) //right side
 			{
@@ -68,6 +80,7 @@ public:
 		{
 			currentActorVector.resize(1);
 			currentActorVector[0] = std::make_unique<Iceman>(this);
+			//currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
 		}
 		return GWSTATUS_CONTINUE_GAME;
 	}
@@ -99,7 +112,7 @@ public:
 		//for(each actor in game world)
 		for(int i = 0; i < currentActorVector.size(); i++)
 		{
-			if(currentActorVector[i]->getHealth() > 0)//If currentActor is alive
+			if(currentActorVector[i]->isAlive())//If currentActor is alive
 			{
 				currentActorVector[i]->doSomething();//tellThisActorToDoSomething(actor[i]);
 
@@ -141,13 +154,14 @@ public:
 		return barrelsRemaining;
 	}
 
+
+
+
+
 private:
 	
 	std::shared_ptr<Actor> actorP_; //Actor smartPointer
-	std::vector<std::vector<std::shared_ptr<Actor>>> oilField; //Creates a 2D vector array of Actor smart pointers
-	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
-	std::vector<std::unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
-
+	
 	int goldRemaining;
 	int barrelsRemaining;
 	int bouldersRemaining;

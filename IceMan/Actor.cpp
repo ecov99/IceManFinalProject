@@ -12,6 +12,11 @@ bool Actor::hasDied()
 		return true;
 }
 
+bool Actor::isAlive()
+{
+	return alive_;
+}
+
 bool Actor::hasCompletedLevel()
 {
 	if (barrelCount == getWorld()->getBarrelsRemaining())
@@ -55,6 +60,33 @@ StudentWorld* Actor::getWorld()
 
 void Iceman::doSomething()
 {
+	//Detecting if Player is overlaying a visible Ice Object
+	bool isCovered = false;
+	for (int h = 0; h < 4; h++)
+	{
+		for (int g = 0; g < 4; g++)
+		{
+			if (getWorld()->iceField[getX() + g][getY() + h] != nullptr)
+			{
+				isCovered = true;
+			}
+		}
+	}
+	if (isCovered)
+	{
+		getWorld()->playSound(SOUND_DIG);
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				getWorld()->iceField[getX() + j][getY() + i].reset();
+				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
+			}
+		}
+
+	}
+	
+	//Player move input 
 	int  ch;
 	if (Actor::getWorld()->getKey(ch) == true)
 	{
