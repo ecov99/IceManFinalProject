@@ -27,6 +27,7 @@ public:
 	virtual int getGold();
 	virtual int getBarrelsLeft();
 	virtual int getSonar();
+	virtual void setAlive(bool n);
 	virtual StudentWorld* getWorld();
 private:
 	bool alive_;

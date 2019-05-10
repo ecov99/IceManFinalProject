@@ -50,6 +50,11 @@ int Actor::getSonar()
 	return sonarCharge_;
 }
 
+void Actor::setAlive(bool n)
+{
+	alive_ = n;
+}
+
 StudentWorld* Actor::getWorld()
 {
 	return sw_;
@@ -145,4 +150,33 @@ int Iceman::getHealth()
 
 void Boulder::doSomething()
 {
+	if (isAlive())
+	{
+		bool isStable = true;
+		for (int h = 0; h < 4; h++)
+		{
+			for (int g = 0; g < 4; g++)
+			{
+				if (getWorld()->iceField[getX() + g][getY() - h] == nullptr)
+				{
+					isStable = false;
+				}
+			}
+		}
+		if (!isStable)
+		{
+			while (getWorld()->iceField[getX()][getY() - 1] == nullptr)
+			{
+				if (getY() > 0)
+				{
+					moveTo(getX(), getY() - 1);
+				}
+			}
+			setAlive(false);
+		}
+	}
+	else
+	{
+		return;
+	}
 }
