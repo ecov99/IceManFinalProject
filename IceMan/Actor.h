@@ -4,7 +4,6 @@
 #include "GraphObject.h"
 #include <memory>
 
-// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
 
 class Actor : public GraphObject
@@ -58,6 +57,7 @@ public:
 private:
 	
 };
+
 class Ice : public Actor
 {
 public:
@@ -71,10 +71,12 @@ public:
 		//doSomething Function serves no purpose
 	}
 };
+
 class Protestor : public Actor
 {
 
 };
+
 class RegularProtestor : public Protestor
 {
 
@@ -89,6 +91,7 @@ class Squirt : public Actor
 {
 
 };
+
 class Barrel : public Actor
 {
 
