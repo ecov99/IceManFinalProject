@@ -143,3 +143,6 @@ int Iceman::getHealth()
 	return Actor::getHealth();
 }
 
+void Boulder::doSomething()
+{
+}

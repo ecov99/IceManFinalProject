@@ -102,7 +102,7 @@ public:
 		GraphObject::setVisible(true);
 	}
 	~Boulder() {}
-	virtual void doSomething() {}
+	virtual void doSomething();
 
 };
 

@@ -42,15 +42,16 @@ public:
 		//	}
 		//}
 
+		//Step 3) Allocate and insert a valid Iceman object into the game world at the proper location
+		//player WILL ALWAYS BE currentActorVector[0]
+		if (currentActorVector.empty())
+		{
+			currentActorVector.resize(1);
+			currentActorVector[0] = std::make_unique<Iceman>(this);
+			//currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
+		}
 		//Step 2) Construct new oil field that meets new level requirements 
 		//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-
-		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
-		
-
-		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
-
-		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
 
 		iceField.resize(64, std::vector<std::shared_ptr<Ice>>(64));
 		for (int i = 0; i < 60; i++) //rows
@@ -73,15 +74,39 @@ public:
 			}
 		}
 
-		
-		//Step 3) Allocate and insert a valid Iceman object into the game world at the proper location
-		//player WILL ALWAYS BE currentActorVector[0]
-		if (currentActorVector.empty())
+
+		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
+		for (int i = 0; i < bouldersRemaining; i++)
 		{
-			currentActorVector.resize(1);
-			currentActorVector[0] = std::make_unique<Iceman>(this);
-			//currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
+			int x = genRandNumber();
+			int y = genRandNumber();
+			bool isCovered = false;
+			for (int h = 0; h < 4; h++)
+			{
+				for (int g = 0; g < 4; g++)
+				{
+					if (iceField[x + g][y + h] != nullptr)
+					{
+						isCovered = true;
+					}
+				}
+			}
+			if (isCovered)
+			{
+				currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
+			}
+			else
+			{
+				i--; //used to reset counter to retry genRandNumber
+			}
 		}
+
+		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
+
+		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
+
+	
+	
 		return GWSTATUS_CONTINUE_GAME;
 	}
 
