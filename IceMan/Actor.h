@@ -31,6 +31,8 @@ public:
 	virtual int getSonar();
 	virtual void setAlive(bool n);
 	virtual StudentWorld* getWorld();
+	virtual void increaseGoldWallet();
+	virtual void decreaseGoldNugget();
 private:
 	bool alive_;
 	int hitPoints_;
@@ -43,6 +45,32 @@ private:
 
 	StudentWorld* sw_;
 	
+};
+
+/*
+	Ice Class
+*/
+class Ice : public Actor
+{
+public:
+	Ice(StudentWorld* sw, int x, int y) :Actor(sw, IID_ICE, x, y, Actor::right, .25, 3)
+	{
+		GraphObject::setVisible(true);
+	}
+	~Ice() {}
+	virtual void doSomething()
+	{
+		//doSomething Function serves no purpose
+	}
+};
+
+/*
+	Player Class
+*/
+class Player : public Actor
+{
+public:
+
 };
 
 /*
@@ -65,29 +93,13 @@ private:
 	
 };
 
-/*
-	Ice Class
-*/
-class Ice : public Actor
-{
-public:
-	Ice(StudentWorld* sw, int x, int y) :Actor(sw, IID_ICE, x, y, Actor::right, .25, 3)
-	{
-		GraphObject::setVisible(true);
-	}
-	~Ice() {}
-	virtual void doSomething()
-	{
-		//doSomething Function serves no purpose
-	}
-};
 
 /*
 	Protestor
 */
 class Protestor : public Actor
 {
-
+public:
 };
 
 /*
@@ -95,7 +107,7 @@ class Protestor : public Actor
 */
 class RegularProtestor : public Protestor
 {
-
+public:
 };
 
 /*
@@ -103,15 +115,23 @@ class RegularProtestor : public Protestor
 */
 class HardcoreProtestor : public Protestor
 {
-
+public:
 };
 
 /*
+	Item Class
+*/
+class Item : public Actor
+{
+public:
+
+};
+/*
 	Squirt Class
 */
-class Squirt : public Actor
+class Squirt : public Item
 {
-
+public:
 };
 
 /*
@@ -119,7 +139,13 @@ class Squirt : public Actor
 */
 class Barrel : public Actor
 {
-	
+public:
+	Barrel(StudentWorld* sw, int x, int y) :Actor(sw, IID_BARREL, x, y, Actor::right, 1, 2)
+	{
+		GraphObject::setVisible(false);
+	}
+	~Barrel() {}
+	virtual void doSomething();
 };
 
 /*
@@ -142,7 +168,13 @@ public:
 */
 class GoldNugget : public Actor
 {
-
+public:
+	GoldNugget(StudentWorld* sw, int x, int y, bool isVis) :Actor(sw, IID_GOLD, x, y, Actor::right, 1, 2)
+	{
+		GraphObject::setVisible(isVis);
+	}
+	~GoldNugget() {}
+	virtual void doSomething() {}
 };
 
 /*
@@ -150,7 +182,7 @@ class GoldNugget : public Actor
 */
 class SonarKit : public Actor
 {
-
+public:
 };
 
 /*
@@ -158,7 +190,7 @@ class SonarKit : public Actor
 */
 class Water : public Actor
 {
-
+public:
 };
 
 

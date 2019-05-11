@@ -81,6 +81,7 @@ void Iceman::doSomething()
 	}
 	if (isCovered)
 	{
+		getWorld()->increaseScore(10);
 		getWorld()->playSound(SOUND_DIG);
 		for (int i = 0; i < 4; i++)
 		{
@@ -90,7 +91,6 @@ void Iceman::doSomething()
 				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
 			}
 		}
-
 	}
 	
 	//Player move input 
@@ -174,15 +174,30 @@ void Boulder::doSomething()
 	}
 	if (!isStable)
 	{
-		while (getWorld()->iceField[getX()][getY() - 1] == nullptr)
+		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
-			if (getY() > 0) // error when falling out of the scope
-			{
+			
 				getWorld()->playSound(SOUND_FALLING_ROCK);
 				moveTo(getX(), getY() - 1);
-			}
+			
 		}
 		setAlive(false);
 	}
 }
 	
+void Barrel::doSomething()
+{
+	//Calculate distance from Iceman
+	int ix = getWorld()->currentActorVector[0]->getX();
+	int iy = getWorld()->currentActorVector[0]->getY();
+	int bx = getX();
+	int by = getY();
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
+	int radius = sqrt(x * x + y * y);
+	if (isVisible() == false && radius <= 4)
+	{
+		setVisible(true);
+		return;
+	}
+}

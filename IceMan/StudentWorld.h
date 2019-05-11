@@ -28,6 +28,15 @@ public:
 	int genRandNumber();
 	void setDisplayText();
 	int getBarrelsRemaining();
+	int calcDistance(int x, int y);
+	int calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2);
+	bool noNeighbors(int x,  int y);
+	//void populateActor(int num, Actor A);
+	//void populateActor(int num, Actor A, bool isVis);
+	void populateBoulder(int num);
+	void populateGold(int num);
+	void populateBarrel(int num);
+	void removeDeadGameObject();
 
 	virtual int init()
 	{
@@ -41,7 +50,11 @@ public:
 		{
 			currentActorVector.resize(1);
 			currentActorVector[0] = std::make_unique<Iceman>(this);
-			//currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
+		}
+		else
+		{
+			currentActorVector[0].release();
+			currentActorVector[0] = std::make_unique<Iceman>(this);
 		}
 
 		//Step 2) Construct new oil field that meets new level requirements 
@@ -69,41 +82,13 @@ public:
 
 
 		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
-		for (int i = 0; i < bouldersRemaining; i++)
-		{
-			int x = genRandNumber();
-			int y = genRandNumber();
-			bool isCovered = false;
-			for (int h = 0; h < 4; h++)
-			{
-				for (int g = 0; g < 4; g++)
-				{
-					if (iceField[x + g][y + h] != nullptr)
-					{
-						isCovered = true;
-					}
-				}
-			}
-			if (isCovered)
-			{
-				for (int h = 0; h < 4; h++)
-				{
-					for (int g = 0; g < 4; g++)
-					{
-						iceField[x + g][y + h].reset();
-						iceField[x + g][y + h] = nullptr;
-					}
-				}
-				currentActorVector.push_back(std::make_unique<Boulder>(this, genRandNumber(), genRandNumber()));
-			}
-			else
-			{
-				i--; //used to reset counter to retry genRandNumber
-			}
-		}
+		populateBoulder(bouldersRemaining);
 
 		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
+		populateGold(goldRemaining);
+
 		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
+		populateBarrel(barrelsRemaining);
 
 		return GWSTATUS_CONTINUE_GAME;
 	}
@@ -123,21 +108,21 @@ public:
 		//for(each actor in game world)
 		for(int i = 0; i < currentActorVector.size(); i++)
 		{
-			if(currentActorVector[i]->isAlive())//If currentActor is alive
-			{
-				currentActorVector[i]->doSomething();//tellThisActorToDoSomething(actor[i]);
+				if (currentActorVector[i]->isAlive())//If currentActor is alive
+				{
+					currentActorVector[i]->doSomething();//tellThisActorToDoSomething(actor[i]);
 
-				if(currentActorVector[0]->hasDied())//if(thePlayerDiedDuringThisTick() == true)
-				{
-					decLives();
-					return GWSTATUS_PLAYER_DIED;
+					if (currentActorVector[0]->hasDied())//if(thePlayerDiedDuringThisTick() == true)
+					{
+						decLives();
+						return GWSTATUS_PLAYER_DIED;
+					}
+					if (currentActorVector[0]->hasCompletedLevel())//if(thePlayerCompletedCurrentLevel == true)
+					{
+						//playFinishedLevelSound()
+						return GWSTATUS_FINISHED_LEVEL;
+					}
 				}
-				if(currentActorVector[0]->hasCompletedLevel())//if(thePlayerCompletedCurrentLevel == true)
-				{
-					//playFinishedLevelSound()
-					return GWSTATUS_FINISHED_LEVEL;
-				}
-			}
 		}
 		//Remove newly dead actors after each tick
 		//removeDeadGameObject();// delete dead game objects
