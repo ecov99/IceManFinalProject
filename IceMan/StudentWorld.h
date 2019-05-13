@@ -7,12 +7,13 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <math.h>
+#include <algorithm>
 #include <ctime>
 #include <cstdlib>
 
 
 class StudentWorld : public GameWorld
+
 {
 public:
 	std::vector<std::vector<std::shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
@@ -80,14 +81,14 @@ public:
 			}
 		}
 
-
-		bouldersRemaining = fmin(GameWorld::getLevel() / 2 + 2, 9); // Determines number of Boulders in current level
+		int levelNum = GameWorld::getLevel();
+		bouldersRemaining = std::min(levelNum / 2 + 2, 9); // Determines number of Boulders in current level
 		populateBoulder(bouldersRemaining);
 
-		goldRemaining = fmax(5 - GameWorld::getLevel() / 2, 3); // Determines number of Gold Nuggets in current level
+		goldRemaining = std::max(5 - levelNum / 2, 3); // Determines number of Gold Nuggets in current level
 		populateGold(goldRemaining);
 
-		barrelsRemaining = fmin(2 + GameWorld::getLevel(), 21); // Determine number of Oil Barrels in current level
+		barrelsRemaining = std::min(2 + levelNum, 21); // Determine number of Oil Barrels in current level
 		populateBarrel(barrelsRemaining);
 
 		return GWSTATUS_CONTINUE_GAME;

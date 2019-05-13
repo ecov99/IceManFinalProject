@@ -239,7 +239,7 @@ void StudentWorld::removeDeadGameObject()
 		if (currentActorVector[i]->isAlive() == false)
 		{
 			currentActorVector.erase(currentActorVector.begin() + i);
-			i = 0;
+			i--;
 		}
 	}
 }

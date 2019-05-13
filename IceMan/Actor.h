@@ -4,6 +4,7 @@
 #include "GraphObject.h"
 #include <memory>
 
+
 class StudentWorld;
 
 /*
@@ -31,8 +32,8 @@ public:
 	virtual int getSonar();
 	virtual void setAlive(bool n);
 	virtual StudentWorld* getWorld();
-	virtual void increaseGoldWallet();
-	virtual void decreaseGoldNugget();
+	//virtual void increaseGoldWallet();
+	//virtual void decreaseGoldNugget();
 private:
 	bool alive_;
 	int hitPoints_;
@@ -70,13 +71,13 @@ public:
 class Player : public Actor
 {
 public:
-
+Player(StudentWorld* sw):Actor(sw, NULL, )
 };
 
 /*
 	IceMan Class
 */
-class Iceman : public Actor
+class Iceman : public Player
 {
 public:
 	Iceman(StudentWorld* sw):Actor(sw, IID_PLAYER, 30, 60, Actor::right, 1, 0)
