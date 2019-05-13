@@ -81,12 +81,13 @@ void Iceman::doSomething()
 	}
 	if (isCovered)
 	{
-		getWorld()->increaseScore(10);
+		
 		getWorld()->playSound(SOUND_DIG);
 		for (int i = 0; i < 4; i++)
 		{
 			for (int j = 0; j < 4; j++)
 			{
+				getWorld()->increaseScore(10);
 				getWorld()->iceField[getX() + j][getY() + i].reset();
 				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
 			}
@@ -176,10 +177,8 @@ void Boulder::doSomething()
 	{
 		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
-			
-				getWorld()->playSound(SOUND_FALLING_ROCK);
-				moveTo(getX(), getY() - 1);
-			
+			getWorld()->playSound(SOUND_FALLING_ROCK);
+			moveTo(getX(), getY() - 1);
 		}
 		setAlive(false);
 	}

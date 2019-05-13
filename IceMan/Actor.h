@@ -31,8 +31,8 @@ public:
 	virtual int getSonar();
 	virtual void setAlive(bool n);
 	virtual StudentWorld* getWorld();
-	virtual void increaseGoldWallet();
-	virtual void decreaseGoldNugget();
+	//virtual void increaseGoldWallet();
+	//virtual void decreaseGoldNugget();
 private:
 	bool alive_;
 	int hitPoints_;
