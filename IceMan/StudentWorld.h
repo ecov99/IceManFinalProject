@@ -27,7 +27,7 @@ public:
 		: GameWorld(assetDir)
 	{
 		int l = GameWorld::getLevel();
-		barrelsRemaining_ = min((l / 2) + 2, 9);
+		bouldersRemaining_ = min((l / 2) + 2, 9);
 		goldRemaining_ = max((5 - l) / 2, 2);
 		barrelsRemaining_ = min(2 + l, 21);
 	}
