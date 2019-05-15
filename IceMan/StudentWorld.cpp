@@ -1,23 +1,148 @@
+/*
+	StudentWorld.cpp will define all functions except ctor/dtor.
+	Has all logic and implementation.
+*/
 #include "StudentWorld.h"
-#include <string>
-using namespace std;
+
+
+/*
+Given Functions
+	- will never be called in our code/manually
+*/
+
 
 GameWorld* createStudentWorld(string assetDir)
 {
 	return new StudentWorld(assetDir);
 }
 
+/*
+Initializes world at the start of each level.
+	- creates ice field
+	- populates ice field with actors
+ */
+int StudentWorld::init()
+{
+	//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
+	// Player WILL ALWAYS BE currentActorVector[0]
+	if (currentActorVector.empty())
+	{
+		currentActorVector.push_back(make_unique<Iceman>(this));
+	}
+
+	//Step 2) Construct new oil field that meets new level requirements 
+	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
+	iceField.resize(64, vector<shared_ptr<Ice>>(64));
+	for (int i = 0; i < 60; i++)		// rows
+	{
+		for (int j = 0; j < 30; j++)	// left side
+		{
+			iceField[j][i] = std::make_shared<Ice>(this, j, i);
+		}
+		for (int p = 31; p < 34; p++)
+		{
+			iceField[p][i] = nullptr;
+		}
+		for (int k = 34; k < 64; k++)	// right side
+		{
+			iceField[k][i] = std::make_shared<Ice>(this, k, i);
+		}
+		for (int l = 0; l < 3; l++)		// bottom of shaft
+		{
+			iceField[i][l] = std::make_shared<Ice>(this, i, l);
+		}
+	}
+
+
+	populateBoulder(bouldersRemaining_);
+	populateGold(goldRemaining_);
+	populateBarrel(barrelsRemaining_);
+
+	return GWSTATUS_CONTINUE_GAME;
+}
+
+/*
+	Responsible for gameplay. Called once per tick.
+		- allows each actor to do something
+*/
+int StudentWorld::move()
+{
+	// Step 1) update display text
+	setDisplayText();
+
+	// Step 2) give each Actor a chance to do something
+	for (int i = 0; i < currentActorVector.size(); i++)
+	{
+		if (currentActorVector[i]->isActive())		// if currentActor is active
+		{
+			currentActorVector[i]->doSomething();	// actor will do something
+
+			if (currentActorVector[0]->isActive() == false)	// if iceman/player died
+			{
+				decLives();
+				return GWSTATUS_PLAYER_DIED;
+			}
+			if (getBarrelsRemaining() <= 0)	// if iceman/player completed level
+			{
+				return GWSTATUS_FINISHED_LEVEL;
+			}
+		}
+	}
+	// Step 3) remove newly dead actors after each tick
+	removeDeadGameObject();
+
+	return GWSTATUS_CONTINUE_GAME;
+}
+
+/*
+	Called at the end of each level.
+		- frees all memory associated with data structures
+			responsible for actors, field, etc.
+*/
+void StudentWorld::cleanUp()
+{
+	// Step 1) clear currentActor vector
+	currentActorVector.clear();
+
+	// Step 2) clear iceField; free smart ptrs AND vectors
+	for (int i = 0; i < 64; ++i) {		// rows
+		for (int j = 0; j < 64; ++j) {	// cols
+			iceField[j][i].reset();
+		}
+		iceField[i].clear();
+	}
+	iceField.clear();
+}
+
+
+
+/*
+Personal Functions
+	- used to achieve logic/gameplay goals
+*/
+
+
+int StudentWorld::getBouldersRemaining()
+{
+	return bouldersRemaining_;
+}
+
 int StudentWorld::getBarrelsRemaining()
 {
-	return barrelsRemaining;
+	return barrelsRemaining_;
+}
+
+int StudentWorld::getGoldRemaining()
+{
+	return goldRemaining_;
 }
 
 int StudentWorld::calcDistance(int x, int y)
 {
-	int radius = sqrt(x * x + y * y);
+	double radius = sqrt(x * x + y * y);
 	return radius;
 }
-
+ 
 int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2)
 {
 	int ix = act1->getX();
@@ -50,7 +175,7 @@ bool StudentWorld::noNeighbors(int x, int y)
 	}
 	return true;
 }
-//
+
 //void StudentWorld::populateActor(int num, Actor A)
 //{
 //	for (int i = 0; i < num; i++)
@@ -190,7 +315,7 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<GoldNugget>(this, x, y, true));
+			currentActorVector.push_back(std::make_unique<Gold>(this, x, y, true));
 		}
 		else
 		{
@@ -227,7 +352,7 @@ void StudentWorld::populateBarrel(int num)
 		}
 		else
 		{
-			i--; //used to reset counter to retry genRandNumber
+			i--; // used to reset counter to retry genRandNumber
 		}
 	}
 }
@@ -236,7 +361,7 @@ void StudentWorld::removeDeadGameObject()
 {
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
-		if (currentActorVector[i]->isAlive() == false)
+		if (currentActorVector[i]->isActive() == false)
 		{
 			currentActorVector.erase(currentActorVector.begin() + i);
 			i--;
@@ -257,17 +382,24 @@ int StudentWorld::genRandNumber()
 
 void StudentWorld::setDisplayText()
 {
+	string temp;
 	int level = GameWorld::getLevel();
 	int lives = GameWorld::getLives();
-	int health = currentActorVector[0]->getHealth();
-	int squirts = currentActorVector[0]->getSquirts();
-	int gold = currentActorVector[0]->getGold();
-	int barrelsLeft = barrelsRemaining;
-	int sonar = currentActorVector[0]->getSonar();
 	int score = GameWorld::getScore();
-	std::string s = "Lvl: " + std::to_string(level) + " Lives: " + std::to_string(lives) +
-		" Hlth: " + std::to_string(health * 10) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
-		std::to_string(gold) + " Oil Left: " + std::to_string(barrelsLeft) + " Sonar: " +
-		std::to_string(sonar) + " Scr: " + std::to_string(score);
-	setGameStatText(s);
+	
+	//int health = currentActorVector[0]->getHealth();
+	//int squirts = currentActor[0]->get_numOfSquirts();
+	//int sonar = currentActor[0]->get_numOfSonars();
+	//int gold = currentActor[0]->get_numOfGold();
+
+	int health = 0;
+	int squirts = 0;
+	int sonar = 0;
+	int gold = 0;
+	
+	temp = "Lvl: " + to_string(level) + " Lives: " + to_string(lives) +
+		" Hlth: " + to_string(health * 10) + "% Wtr: " + to_string(squirts) +
+		" Gld: " + to_string(gold) + " Oil Left: " + to_string(barrelsRemaining_) +
+		" Sonar: " + to_string(sonar) + " Scr: " + to_string(score);
+	setGameStatText(temp);
 }

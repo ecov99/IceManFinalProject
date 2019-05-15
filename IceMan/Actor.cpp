@@ -1,73 +1,54 @@
+/*
+	Actor.cpp will define all functions, except for ctors/dtors.
+	Has all logic and implementation.
+*/
 #include "Actor.h"
 #include "StudentWorld.h"
 
 /*
-	Actor Class
+	CLASS: Actor
+	Abstract Base Class for all other classes.
 */
-bool Actor::hasDied()
-{
-	if (getHealth() > 0)
-		return false;
-	else
-		return true;
+//void Actor::doSomething() {}	// doesn't do anything
+bool Actor::isActive() {
+	return active_;
 }
-
-bool Actor::isAlive()
-{
-	return alive_;
+void Actor::setActive(bool b) {
+	active_ = b;
 }
-
-bool Actor::hasCompletedLevel()
-{
-	if (barrelCount == getWorld()->getBarrelsRemaining())
-		return true;
-	else
-		return false;
-}
-
-int Actor::getHealth()
-{
-	return hitPoints_;
-}
-
-int Actor::getSquirts()
-{
-	return waterUnits_;
-}
-
-int Actor::getGold()
-{
-	return goldNuggetWallet_;
-}
-
-int Actor::getBarrelsLeft()
-{
-	return barrelCount;
-}
-
-int Actor::getSonar()
-{
-	return sonarCharge_;
-}
-
-void Actor::setAlive(bool n)
-{
-	alive_ = n;
-}
-
-StudentWorld* Actor::getWorld()
-{
+StudentWorld* Actor::getWorld() {
 	return sw_;
 }
 
-
+/*
+	CLASS: Character
+	Abstract Base Class for all objects that can be annoyed()
+		(IceMan and both Protestors)
+*/
+void Character::annoyed() {}	// doesn't do anything
 
 /*
-	IceMan Class
+	CLASS: Player
+	Abstract Base Class for all objects that can be annoyed()
+		(IceMan and both Protestors)
+*/
+int Character::getHealth() {
+	return health_;
+}
+bool Character::hasDied() {
+	if (health_ <= 0)
+		return true;
+	else
+		return false;
+}
+
+/*
+	CLASS: Iceman
+	User controlled player.
 */
 void Iceman::doSomething()
 {
-	//Detecting if Player is overlaying a visible Ice Object
+	// Detecting if player is overlaying a visible Ice object
 	bool isCovered = false;
 	for (int h = 0; h < 4; h++)
 	{
@@ -94,9 +75,9 @@ void Iceman::doSomething()
 		}
 	}
 	
-	//Player move input 
+	// player input 
 	int  ch;
-	if (Actor::getWorld()->getKey(ch) == true)
+	if (getWorld()->getKey(ch) == true)
 	{
 		//User hit a key this tick
 		switch (ch)
@@ -140,16 +121,20 @@ void Iceman::doSomething()
 			//
 			break;
 		case KEY_PRESS_ESCAPE:
-			//Exit level
-			
+			// stop program
+			exit(0);
 			break;
 		}
 	}
 }
-
-int Iceman::getHealth()
-{
-	return Actor::getHealth();
+int Iceman::getNumOfSquirts() {
+	return numOfSquirts_;
+}
+int Iceman::getNumOfSonars() {
+	return numOfSonars_;
+}
+int Iceman::getNumOfGold() {
+	return numOfGold_;
 }
 
 /*
@@ -180,7 +165,7 @@ void Boulder::doSomething()
 			getWorld()->playSound(SOUND_FALLING_ROCK);
 			moveTo(getX(), getY() - 1);
 		}
-		setAlive(false);
+		setActive(false);
 	}
 }
 	
@@ -193,7 +178,7 @@ void Barrel::doSomething()
 	int by = getY();
 	int x = abs(ix - bx);
 	int y = abs(iy - by);
-	int radius = sqrt(x * x + y * y);
+	double radius = sqrt(x * x + y * y);
 	if (isVisible() == false && radius <= 4)
 	{
 		setVisible(true);

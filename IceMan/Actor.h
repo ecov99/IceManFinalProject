@@ -1,132 +1,204 @@
 #ifndef ACTOR_H_
 #define ACTOR_H_
 
+/*
+	Actor.h will define ALL class ctors/dtors.
+	Will also declare functions and data members.
+*/
 #include "GraphObject.h"
 #include <memory>
-
+using namespace std;
 
 class StudentWorld;
 
 /*
-	Actor Class
+	CLASS: Actor
+Base Class for all other classes.
 */
 class Actor : public GraphObject
 {
 public:
-	Actor(StudentWorld* sw, int imageID, int startX, int startY, Direction dir = right, double size = 1.0, unsigned int depth = 0)
-		: GraphObject(imageID, startX, startY, dir, size, depth), alive_(true), sw_(sw), annoyed_(false), hitPoints_(10),
-		waterUnits_(5), sonarCharge_(1), goldNuggetWallet_(0), barrelCount(0) {}
-	Actor(StudentWorld* sw, int x, int y) : GraphObject(NULL, x, y, Actor::right, 1, 0) {}
-	
-	
-	virtual ~Actor() {}
+	// ctors & dtors
+	Actor(StudentWorld* sw, int imageID, int startX, int startY, Direction dir, double size, unsigned int depth)
+		: GraphObject(imageID, startX, startY, dir, size, depth)
+	{
+		active_ = true;
+		sw_ = sw;
+	}
+	virtual ~Actor()
+	{}
 
-	virtual void doSomething() {}
-	virtual bool hasDied();
-	virtual bool isAlive();
-	virtual bool hasCompletedLevel();
-	virtual int getHealth();
-	virtual int getSquirts();
-	virtual int getGold();
-	virtual int getBarrelsLeft();
-	virtual int getSonar();
-	virtual void setAlive(bool n);
-	virtual StudentWorld* getWorld();
-	//virtual void increaseGoldWallet();
-	//virtual void decreaseGoldNugget();
+	// behaviors
+	virtual void doSomething() = 0;
+	bool isActive();
+	void setActive(bool b);
+	StudentWorld* getWorld();
+
 private:
-	bool alive_;
-	int hitPoints_;
-	bool annoyed_;
-	int waterUnits_;
-	int sonarCharge_;
-	int goldNuggetWallet_;
-	int barrelCount;
-	
-
+	// attributes
+	bool active_;
 	StudentWorld* sw_;
-	
+
 };
 
 /*
-	Ice Class
+	CLASS: Ice
+	Doesn't do anything except populate iceField
 */
 class Ice : public Actor
 {
 public:
-	Ice(StudentWorld* sw, int x, int y) :Actor(sw, IID_ICE, x, y, Actor::right, .25, 3)
+	// ctors & dtors
+	Ice(StudentWorld* sw, int x, int y) : Actor(sw, IID_ICE, x, y, right, .25, 3)
 	{
 		GraphObject::setVisible(true);
 	}
 	~Ice() {}
-	virtual void doSomething()
+
+	// behaviors
+	virtual void doSomething() {}	// ice doesn't do anything
+};
+
+/*
+	CLASS: Character
+	Abstract Base Class for all objects that can be annoyed()
+		(IceMan and both Protestors)
+*/
+class Character : public Actor {
+public:
+	// ctors & dtors
+	Character(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, int h)
+		: Actor(sw, id, x, y, dir, size, depth)
 	{
-		//doSomething Function serves no purpose
+		health_ = h;
 	}
+	virtual ~Character() {}
+
+	// behaviors
+	virtual void annoyed();
+	int getHealth();
+	bool hasDied();
+
+private:
+	// attributes
+	int health_;
 };
 
 /*
-	Player Class
+	CLASS: Iceman
+	User controlled player.
 */
-class Player : public Actor
-{
+class Iceman : public Character {
 public:
-Player(StudentWorld* sw):Actor(sw, NULL, )
-};
-
-/*
-	IceMan Class
-*/
-class Iceman : public Player
-{
-public:
-	Iceman(StudentWorld* sw):Actor(sw, IID_PLAYER, 30, 60, Actor::right, 1, 0)
+	// ctors & dtors
+	Iceman(StudentWorld* sw) : Character(sw, IID_PLAYER, 30, 60, right, 1, 0, 10)
 	{
+		numOfSquirts_ = 5;
+		numOfSonars_ = 1;
+		numOfGold_ = 0;
 		GraphObject::setVisible(true);
 	}
-	
 	~Iceman() {}
+
+	// behaviors
 	virtual void doSomething();
-	
+	int getNumOfSquirts();
+	int getNumOfSonars();
+	int getNumOfGold();
 
-	int getHealth();
 private:
-	
-};
-
-
-/*
-	Protestor
-*/
-class Protestor : public Actor
-{
-public:
+	// attributes
+	int numOfSquirts_;
+	int numOfSonars_;
+	int numOfGold_;
+	StudentWorld* sw_;
 };
 
 /*
-	RegularProtestor Class
-*/
-class RegularProtestor : public Protestor
-{
-public:
-};
-
-/*
-	HardcoreProtestor Class
-*/
-class HardcoreProtestor : public Protestor
-{
-public:
-};
-
-/*
-	Item Class
+	CLASS: Item
+	Abstract Base Class for all items.
 */
 class Item : public Actor
 {
 public:
+	// ctors & dtors
+	Item(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth)
+		: Actor(sw, id, x, y, dir, size, depth)
+	{}
+	virtual ~Item() {}
 
+	// behaviors
+	//void displayItem();
+	//void removeItem();
+
+private:
+	// attributes
 };
+/*
+	CLASS: Boulder
+*/
+class Boulder : public Item
+{
+public:
+	// ctors & dtors
+	Boulder(StudentWorld* sw, int x, int y) : Item(sw, IID_BOULDER, x, y, down, 1, 1)
+	{
+		GraphObject::setVisible(true);
+	}
+	~Boulder() {}
+
+	// behaviors
+	virtual void doSomething();
+
+private:
+	// attributes
+};
+/*
+	CLASS: Barrel
+*/
+class Barrel : public Item
+{
+public:
+	// ctors & dtors
+	Barrel(StudentWorld* sw, int x, int y) : Item(sw, IID_BARREL, x, y, right, 1, 2)
+	{
+		GraphObject::setVisible(false);
+	}
+	~Barrel() {}
+
+	// behaviors
+	virtual void doSomething();
+
+private:
+	// attributes
+};
+/*
+	CLASS: Gold
+*/
+class Gold : public Item
+{
+public:
+	// ctors & dtors
+	Gold(StudentWorld* sw, int x, int y, bool isVis) : Item(sw, IID_GOLD, x, y, right, 1, 2)
+	{
+		GraphObject::setVisible(isVis);
+	}
+	~Gold() {}
+
+	// behaviors
+	virtual void doSomething() {}
+
+private:
+	// attributes
+};
+/*
+	Water Class
+*/
+class Water : public Item
+{
+public:
+};
+
 /*
 	Squirt Class
 */
@@ -134,65 +206,12 @@ class Squirt : public Item
 {
 public:
 };
-
 /*
-	Barrel Class
+	Sonar Class
 */
-class Barrel : public Actor
-{
-public:
-	Barrel(StudentWorld* sw, int x, int y) :Actor(sw, IID_BARREL, x, y, Actor::right, 1, 2)
-	{
-		GraphObject::setVisible(false);
-	}
-	~Barrel() {}
-	virtual void doSomething();
-};
-
-/*
-	Boulder Class
-*/
-class Boulder : public Actor
-{
-public:
-	Boulder(StudentWorld* sw, int x, int y) : Actor(sw, IID_BOULDER, x, y, Actor::down, 1, 1)
-	{
-		GraphObject::setVisible(true);
-	}
-	~Boulder() {}
-	virtual void doSomething();
-
-};
-
-/*
-	GoldNugget Class
-*/
-class GoldNugget : public Actor
-{
-public:
-	GoldNugget(StudentWorld* sw, int x, int y, bool isVis) :Actor(sw, IID_GOLD, x, y, Actor::right, 1, 2)
-	{
-		GraphObject::setVisible(isVis);
-	}
-	~GoldNugget() {}
-	virtual void doSomething() {}
-};
-
-/*
-	SonarKit Class
-*/
-class SonarKit : public Actor
+class Sonar : public Item
 {
 public:
 };
-
-/*
-	Water Class
-*/
-class Water : public Actor
-{
-public:
-};
-
 
 #endif // ACTOR_H_
