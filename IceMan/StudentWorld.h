@@ -1,6 +1,9 @@
 #ifndef STUDENTWORLD_H_
 #define STUDENTWORLD_H_
-
+/*
+	StudentWorld.h will define ctor/dtor.
+	Will also declare functions, data members.
+*/
 #include "GameWorld.h"
 #include "GameConstants.h"
 #include "Actor.h"

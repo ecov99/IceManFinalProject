@@ -1,3 +1,7 @@
+/*
+	StudentWorld.cpp will define all functions except ctor/dtor.
+	Has all logic and implementation.
+*/
 #include "StudentWorld.h"
 
 
@@ -69,16 +73,16 @@ int StudentWorld::move()
 	// Step 2) give each Actor a chance to do something
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
-		if (currentActorVector[i]->isAlive())		// if currentActor is alive
+		if (currentActorVector[i]->isActive())		// if currentActor is active
 		{
 			currentActorVector[i]->doSomething();	// actor will do something
 
-			if (currentActorVector[0]->hasDied())	//if iceman/player died
+			if (currentActorVector[0]->isActive() == false)	// if iceman/player died
 			{
 				decLives();
 				return GWSTATUS_PLAYER_DIED;
 			}
-			if (currentActorVector[0]->hasCompletedLevel())	// if iceman/player completed level
+			if (getBarrelsRemaining() <= 0)	// if iceman/player completed level
 			{
 				return GWSTATUS_FINISHED_LEVEL;
 			}
@@ -135,7 +139,7 @@ int StudentWorld::getGoldRemaining()
 
 int StudentWorld::calcDistance(int x, int y)
 {
-	int radius = sqrt(x * x + y * y);
+	double radius = sqrt(x * x + y * y);
 	return radius;
 }
  
@@ -311,7 +315,7 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<GoldNugget>(this, x, y, true));
+			currentActorVector.push_back(std::make_unique<Gold>(this, x, y, true));
 		}
 		else
 		{
@@ -357,7 +361,7 @@ void StudentWorld::removeDeadGameObject()
 {
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
-		if (currentActorVector[i]->isAlive() == false)
+		if (currentActorVector[i]->isActive() == false)
 		{
 			currentActorVector.erase(currentActorVector.begin() + i);
 			i--;
@@ -378,17 +382,24 @@ int StudentWorld::genRandNumber()
 
 void StudentWorld::setDisplayText()
 {
+	string temp;
 	int level = GameWorld::getLevel();
 	int lives = GameWorld::getLives();
-	int health = currentActorVector[0]->getHealth();
-	int squirts = currentActorVector[0]->getSquirts();
-	int gold = currentActorVector[0]->getGold();
-	int barrelsLeft = barrelsRemaining_;
-	int sonar = currentActorVector[0]->getSonar();
 	int score = GameWorld::getScore();
-	std::string s = "Lvl: " + std::to_string(level) + " Lives: " + std::to_string(lives) +
-		" Hlth: " + std::to_string(health * 10) + "% Wtr: " + std::to_string(squirts) + " Gld: " +
-		std::to_string(gold) + " Oil Left: " + std::to_string(barrelsLeft) + " Sonar: " +
-		std::to_string(sonar) + " Scr: " + std::to_string(score);
-	setGameStatText(s);
+	
+	//int health = currentActorVector[0]->getHealth();
+	//int squirts = currentActor[0]->get_numOfSquirts();
+	//int sonar = currentActor[0]->get_numOfSonars();
+	//int gold = currentActor[0]->get_numOfGold();
+
+	int health = 0;
+	int squirts = 0;
+	int sonar = 0;
+	int gold = 0;
+	
+	temp = "Lvl: " + to_string(level) + " Lives: " + to_string(lives) +
+		" Hlth: " + to_string(health * 10) + "% Wtr: " + to_string(squirts) +
+		" Gld: " + to_string(gold) + " Oil Left: " + to_string(barrelsRemaining_) +
+		" Sonar: " + to_string(sonar) + " Scr: " + to_string(score);
+	setGameStatText(temp);
 }
