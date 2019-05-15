@@ -2,65 +2,48 @@
 #include "StudentWorld.h"
 
 /*
-	Actor Class
+	CLASS: Actor
+	Base class for all other classes.
 */
-bool Actor::hasDied()
-{
+bool Actor::hasDied() {
 	if (getHealth() > 0)
 		return false;
 	else
 		return true;
 }
-
-bool Actor::isAlive()
-{
+bool Actor::isAlive() {
 	return alive_;
 }
-
-bool Actor::hasCompletedLevel()
-{
+bool Actor::hasCompletedLevel() {
 	if (barrelCount == getWorld()->getBarrelsRemaining())
 		return true;
 	else
 		return false;
 }
 
-int Actor::getHealth()
-{
+int Actor::getHealth() {
 	return hitPoints_;
 }
-
-int Actor::getSquirts()
-{
+int Actor::getSquirts() {
 	return waterUnits_;
 }
 
-int Actor::getGold()
-{
+int Actor::getGold() {
 	return goldNuggetWallet_;
 }
 
-int Actor::getBarrelsLeft()
-{
+int Actor::getBarrelsLeft() {
 	return barrelCount;
 }
-
-int Actor::getSonar()
-{
+int Actor::getSonar() {
 	return sonarCharge_;
 }
-
-void Actor::setAlive(bool n)
-{
+void Actor::setAlive(bool n) {
 	alive_ = n;
 }
-
-StudentWorld* Actor::getWorld()
-{
+StudentWorld* Actor::getWorld() {
 	return sw_;
 }
-
-
 
 /*
 	IceMan Class

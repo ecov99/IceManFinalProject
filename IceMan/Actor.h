@@ -7,7 +7,8 @@
 class StudentWorld;
 
 /*
-	Actor Class
+	CLASS: Actor
+	Base class for all other classes.
 */
 class Actor : public GraphObject
 {
