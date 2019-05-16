@@ -137,38 +137,80 @@ int Iceman::getNumOfGold() {
 	return numOfGold_;
 }
 
+
 /*
-	Boulder Class
+	CLASS: Item
+	Base Class for all items.
+*/
+void Item::displayItem() {
+	GraphObject::setVisible(true);
+}
+void Item::removeItem() {
+	GraphObject::setVisible(false);
+}
+
+/*
+	CLASS: Boulder
 */
 void Boulder::doSomething()
 {
-	bool isStable = true;
-	int count = 0;
-	for (int h = 0; h < 4; h++)
-	{
-		for (int g = 0; g < 4; g++)
+	// boulder is in the ice
+	if (isStable() == true && hasFallen() == false) {
+		// check to see if boulder is stable
+		int count = 0;
+		for (int h = 0; h < 4; h++)
 		{
-			if (getWorld()->iceField[getX() + g][getY() -1 - h] == nullptr)
+			for (int g = 0; g < 4; g++)
 			{
-				count++;
+				if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+					count++;
+
 			}
 		}
+		if (count == 16)
+			setStable(false);
 	}
-	if (count == 16)
-	{
-		isStable = false;
-	}
-	if (!isStable)
-	{
+
+	// boulder is falling
+	if (isStable() == false && hasFallen() == false) {
 		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
 			getWorld()->playSound(SOUND_FALLING_ROCK);
 			moveTo(getX(), getY() - 1);
 		}
-		setActive(false);
+		// BUG: needs to wait before disappearing
+		// setActive(false);
+		setWaiting(true);
 	}
+
+	// boulder has landed
+	if (isStable() == false && hasFallen() == true) {
+			setActive(false);
+	}
+
 }
-	
+bool Boulder::isStable() {
+	return stable_;
+}
+void Boulder::setStable(bool b) {
+	stable_ = b;
+}
+bool Boulder::isWaiting() {
+	return waiting_;
+}
+void Boulder::setWaiting(bool b) {
+	waiting_ = b;
+}
+bool Boulder::hasFallen() {
+	return fallen_;
+}
+void Boulder::setFallen(bool b) {
+	fallen_ = b;
+}
+
+/*
+	CLASS: Barrel
+*/
 void Barrel::doSomething()
 {
 	//Calculate distance from Iceman
