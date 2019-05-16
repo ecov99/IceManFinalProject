@@ -137,18 +137,6 @@ int Iceman::getNumOfGold() {
 	return numOfGold_;
 }
 
-
-/*
-	CLASS: Item
-	Base Class for all items.
-*/
-void Item::displayItem() {
-	GraphObject::setVisible(true);
-}
-void Item::removeItem() {
-	GraphObject::setVisible(false);
-}
-
 /*
 	CLASS: Boulder
 */
@@ -156,31 +144,51 @@ void Boulder::doSomething()
 {
 	// boulder is in the ice
 	if (isStable() == true && hasFallen() == false) {
-		// check to see if boulder is stable
-		int count = 0;
-		for (int h = 0; h < 4; h++)
-		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
-					count++;
 
+		// checks for ice below if boulder is not waiting to fall
+		if (isWaitingToFall() == false) {
+			int count = 0;
+			for (int h = 0; h < 4; h++)
+			{
+				for (int g = 0; g < 4; g++)
+				{
+					if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+						count++;
+
+				}
 			}
+			// boulder is now waiting to fall
+			if (count == 16)
+				setWaitingToFall(true);
 		}
-		if (count == 16)
-			setStable(false);
+		else {	// gives boulder a pause before falling
+			fallWaitCount_--;
+			if (fallWaitCount_ <= 0)
+				setStable(false);
+		}
+
 	}
 
 	// boulder is falling
 	if (isStable() == false && hasFallen() == false) {
-		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
-		{
-			getWorld()->playSound(SOUND_FALLING_ROCK);
-			moveTo(getX(), getY() - 1);
+		
+		// moves boulder down if its not waiting to disappear
+		if (waitingToDisappear_ == false) {
+			while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+			{
+				getWorld()->playSound(SOUND_FALLING_ROCK);
+				moveTo(getX(), getY() - 1);
+			}
+			// boulder is now waiting to disappear
+			setWaitingToDisappear(true);
+			
 		}
-		// BUG: needs to wait before disappearing
-		// setActive(false);
-		setWaiting(true);
+		else {	// gives boulder enough time to fall to ground
+			disappearWaitCount_--;
+			if (disappearWaitCount_ <= 0)
+				setFallen(true);
+		}
+
 	}
 
 	// boulder has landed
@@ -195,17 +203,23 @@ bool Boulder::isStable() {
 void Boulder::setStable(bool b) {
 	stable_ = b;
 }
-bool Boulder::isWaiting() {
-	return waiting_;
+bool Boulder::isWaitingToFall() {
+	return waitingToFall_;
 }
-void Boulder::setWaiting(bool b) {
-	waiting_ = b;
+void Boulder::setWaitingToFall(bool b) {
+	waitingToFall_ = b;
 }
 bool Boulder::hasFallen() {
 	return fallen_;
 }
 void Boulder::setFallen(bool b) {
 	fallen_ = b;
+}
+bool Boulder::isWaitingToDisappear() {
+	return waitingToDisappear_;
+}
+void Boulder::setWaitingToDisappear(bool b) {
+	waitingToDisappear_ = b;
 }
 
 /*

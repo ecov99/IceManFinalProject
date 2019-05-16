@@ -148,8 +148,8 @@ int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Acto
 	int iy = act1->getY();
 	int bx = act2->getX();
 	int by = act2->getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
+	int x = std::abs(ix - bx);
+	int y = std::abs(iy - by);
 	int radius = sqrt(x * x + y * y);
 	return radius;
 }

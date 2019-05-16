@@ -128,9 +128,6 @@ public:
 	virtual ~Item() {}
 
 	// behaviors
-	void displayItem();
-	void removeItem();
-
 private:
 	// attributes
 };
@@ -145,9 +142,11 @@ public:
 	{
 		GraphObject::setVisible(true);
 		stable_ = true;
-		waiting_ = false;
-		waitCount_ = 40;
+		waitingToFall_ = false;
+		fallWaitCount_ = 20;
 		fallen_ = false;
+		waitingToDisappear_ = false;
+		disappearWaitCount_ = 30;
 	}
 	~Boulder() {}
 
@@ -155,17 +154,21 @@ public:
 	virtual void doSomething();
 	bool isStable();
 	void setStable(bool b);
-	bool isWaiting();
-	void setWaiting(bool b);
+	bool isWaitingToFall();
+	void setWaitingToFall(bool b);
 	bool hasFallen();
 	void setFallen(bool b);
+	bool isWaitingToDisappear();
+	void setWaitingToDisappear(bool b);
 
 private:
 	// attributes
 	bool stable_;
-	bool waiting_;
-	int waitCount_;
+	bool waitingToFall_;
+	int fallWaitCount_;
 	bool fallen_;
+	bool waitingToDisappear_;
+	int disappearWaitCount_;
 };
 /*
 	CLASS: Barrel
