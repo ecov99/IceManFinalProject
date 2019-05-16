@@ -32,7 +32,7 @@ int StudentWorld::init()
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-	iceField.resize(64, vector<shared_ptr<Ice>>(64));
+	iceField.resize(64, std::vector<shared_ptr<Ice>>(64));
 	for (int i = 0; i < 60; i++)		// rows
 	{
 		for (int j = 0; j < 30; j++)	// left side
@@ -373,7 +373,7 @@ int StudentWorld::genRandNumber()
 {
 	int num;
 	const int MIN_VALUE = 0;
-	const int MAX_VALUE = 60;
+	const int MAX_VALUE = 59;
 	unsigned seed = time(0);
 	srand(seed);
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
