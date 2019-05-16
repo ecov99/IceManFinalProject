@@ -373,7 +373,7 @@ int StudentWorld::genRandNumber()
 {
 	int num;
 	const int MIN_VALUE = 0;
-	const int MAX_VALUE = 60;
+	const int MAX_VALUE = 59;
 	unsigned seed = time(0);
 	srand(seed);
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
