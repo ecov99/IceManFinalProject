@@ -145,8 +145,7 @@ public:
 		waitingToFall_ = false;
 		fallWaitCount_ = 20;
 		fallen_ = false;
-		waitingToDisappear_ = false;
-		disappearWaitCount_ = 30;
+		collided_ = false;
 	}
 	~Boulder() {}
 
@@ -156,10 +155,10 @@ public:
 	void setStable(bool b);
 	bool isWaitingToFall();
 	void setWaitingToFall(bool b);
-	bool hasFallen();
-	void setFallen(bool b);
-	bool isWaitingToDisappear();
-	void setWaitingToDisappear(bool b);
+	bool isFalling();
+	void setFalling(bool b);
+	bool hasCollided();
+	void setCollided(bool b);
 
 private:
 	// attributes
@@ -167,8 +166,7 @@ private:
 	bool waitingToFall_;
 	int fallWaitCount_;
 	bool fallen_;
-	bool waitingToDisappear_;
-	int disappearWaitCount_;
+	bool collided_;
 };
 /*
 	CLASS: Barrel

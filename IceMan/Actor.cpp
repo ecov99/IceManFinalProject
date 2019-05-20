@@ -143,7 +143,7 @@ int Iceman::getNumOfGold() {
 void Boulder::doSomething()
 {
 	// boulder is in the ice
-	if (isStable() == true && hasFallen() == false) {
+	if (isStable() == true && isFalling() == false) {
 
 		// checks for ice below if boulder is not waiting to fall
 		if (isWaitingToFall() == false) {
@@ -164,37 +164,52 @@ void Boulder::doSomething()
 		else {	// gives boulder a pause before falling
 			fallWaitCount_--;
 			if (fallWaitCount_ <= 0)
+			{
 				setStable(false);
+				setFalling(true);
+			}
 		}
 
 	}
 
 	// boulder is falling
-	if (isStable() == false && hasFallen() == false) {
+	if (isFalling() == true){// hasFallen() == false) {
 		
 		// moves boulder down if its not waiting to disappear
-		if (waitingToDisappear_ == false) {
+		//if (waitingToDisappear_ == false) {
 			while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 			{
 				getWorld()->playSound(SOUND_FALLING_ROCK);
 				moveTo(getX(), getY() - 1);
 			}
 			// boulder is now waiting to disappear
-			setWaitingToDisappear(true);
-			
-		}
-		else {	// gives boulder enough time to fall to ground
-			disappearWaitCount_--;
-			if (disappearWaitCount_ <= 0)
-				setFallen(true);
-		}
+			//setWaitingToDisappear(true);
+
+			//Change collision if neccessary
+			if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
+			{
+				
+				setCollided(true);
+			}
+		//}
+		//else {	// gives boulder enough time to fall to ground
+		//	disappearWaitCount_--;
+		//	if (disappearWaitCount_ <= 0)
+		//		setFallen(true);
+		//}
 
 	}
+	//Collision check
+	if (hasCollided() == true)
+	{
+		setActive(false);
 
+
+	}
 	// boulder has landed
-	if (isStable() == false && hasFallen() == true) {
+	/*if (isStable() == false && hasFallen() == true) {
 			setActive(false);
-	}
+	}*/
 
 }
 bool Boulder::isStable() {
@@ -209,17 +224,17 @@ bool Boulder::isWaitingToFall() {
 void Boulder::setWaitingToFall(bool b) {
 	waitingToFall_ = b;
 }
-bool Boulder::hasFallen() {
+bool Boulder::isFalling() {
 	return fallen_;
 }
-void Boulder::setFallen(bool b) {
+void Boulder::setFalling(bool b) {
 	fallen_ = b;
 }
-bool Boulder::isWaitingToDisappear() {
-	return waitingToDisappear_;
+bool Boulder::hasCollided() {
+	return collided_;
 }
-void Boulder::setWaitingToDisappear(bool b) {
-	waitingToDisappear_ = b;
+void Boulder::setCollided(bool b) {
+	collided_ = b;
 }
 
 /*
@@ -232,8 +247,8 @@ void Barrel::doSomething()
 	int iy = getWorld()->currentActorVector[0]->getY();
 	int bx = getX();
 	int by = getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
+	int x = std::abs(ix - bx);
+	int y = std::abs(iy - by);
 	double radius = sqrt(x * x + y * y);
 	if (isVisible() == false && radius <= 4)
 	{
