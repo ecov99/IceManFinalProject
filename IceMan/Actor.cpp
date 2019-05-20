@@ -184,4 +184,5 @@ void Barrel::doSomething()
 		setVisible(true);
 		return;
 	}
+	
 }
