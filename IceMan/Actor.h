@@ -116,7 +116,7 @@ private:
 
 /*
 	CLASS: Item
-	Abstract Base Class for all items.
+	Base Class for all items.
 */
 class Item : public Actor
 {
@@ -128,9 +128,6 @@ public:
 	virtual ~Item() {}
 
 	// behaviors
-	//void displayItem();
-	//void removeItem();
-
 private:
 	// attributes
 };
@@ -144,14 +141,34 @@ public:
 	Boulder(StudentWorld* sw, int x, int y) : Item(sw, IID_BOULDER, x, y, down, 1, 1)
 	{
 		GraphObject::setVisible(true);
+		stable_ = true;
+		waitingToFall_ = false;
+		fallWaitCount_ = 20;
+		fallen_ = false;
+		waitingToDisappear_ = false;
+		disappearWaitCount_ = 30;
 	}
 	~Boulder() {}
 
 	// behaviors
 	virtual void doSomething();
+	bool isStable();
+	void setStable(bool b);
+	bool isWaitingToFall();
+	void setWaitingToFall(bool b);
+	bool hasFallen();
+	void setFallen(bool b);
+	bool isWaitingToDisappear();
+	void setWaitingToDisappear(bool b);
 
 private:
 	// attributes
+	bool stable_;
+	bool waitingToFall_;
+	int fallWaitCount_;
+	bool fallen_;
+	bool waitingToDisappear_;
+	int disappearWaitCount_;
 };
 /*
 	CLASS: Barrel

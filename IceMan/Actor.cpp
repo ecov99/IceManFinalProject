@@ -138,37 +138,93 @@ int Iceman::getNumOfGold() {
 }
 
 /*
-	Boulder Class
+	CLASS: Boulder
 */
 void Boulder::doSomething()
 {
-	bool isStable = true;
-	int count = 0;
-	for (int h = 0; h < 4; h++)
-	{
-		for (int g = 0; g < 4; g++)
-		{
-			if (getWorld()->iceField[getX() + g][getY() -1 - h] == nullptr)
+	// boulder is in the ice
+	if (isStable() == true && hasFallen() == false) {
+
+		// checks for ice below if boulder is not waiting to fall
+		if (isWaitingToFall() == false) {
+			int count = 0;
+			for (int h = 0; h < 4; h++)
 			{
-				count++;
+				for (int g = 0; g < 4; g++)
+				{
+					if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+						count++;
+
+				}
 			}
+			// boulder is now waiting to fall
+			if (count == 16)
+				setWaitingToFall(true);
 		}
-	}
-	if (count == 16)
-	{
-		isStable = false;
-	}
-	if (!isStable)
-	{
-		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
-		{
-			getWorld()->playSound(SOUND_FALLING_ROCK);
-			moveTo(getX(), getY() - 1);
+		else {	// gives boulder a pause before falling
+			fallWaitCount_--;
+			if (fallWaitCount_ <= 0)
+				setStable(false);
 		}
-		setActive(false);
+
 	}
+
+	// boulder is falling
+	if (isStable() == false && hasFallen() == false) {
+		
+		// moves boulder down if its not waiting to disappear
+		if (waitingToDisappear_ == false) {
+			while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+			{
+				getWorld()->playSound(SOUND_FALLING_ROCK);
+				moveTo(getX(), getY() - 1);
+			}
+			// boulder is now waiting to disappear
+			setWaitingToDisappear(true);
+			
+		}
+		else {	// gives boulder enough time to fall to ground
+			disappearWaitCount_--;
+			if (disappearWaitCount_ <= 0)
+				setFallen(true);
+		}
+
+	}
+
+	// boulder has landed
+	if (isStable() == false && hasFallen() == true) {
+			setActive(false);
+	}
+
 }
-	
+bool Boulder::isStable() {
+	return stable_;
+}
+void Boulder::setStable(bool b) {
+	stable_ = b;
+}
+bool Boulder::isWaitingToFall() {
+	return waitingToFall_;
+}
+void Boulder::setWaitingToFall(bool b) {
+	waitingToFall_ = b;
+}
+bool Boulder::hasFallen() {
+	return fallen_;
+}
+void Boulder::setFallen(bool b) {
+	fallen_ = b;
+}
+bool Boulder::isWaitingToDisappear() {
+	return waitingToDisappear_;
+}
+void Boulder::setWaitingToDisappear(bool b) {
+	waitingToDisappear_ = b;
+}
+
+/*
+	CLASS: Barrel
+*/
 void Barrel::doSomething()
 {
 	//Calculate distance from Iceman

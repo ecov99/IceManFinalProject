@@ -53,7 +53,6 @@ int StudentWorld::init()
 		}
 	}
 
-
 	populateBoulder(bouldersRemaining_);
 	populateGold(goldRemaining_);
 	populateBarrel(barrelsRemaining_);
@@ -149,8 +148,8 @@ int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Acto
 	int iy = act1->getY();
 	int bx = act2->getX();
 	int by = act2->getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
+	int x = std::abs(ix - bx);
+	int y = std::abs(iy - by);
 	int radius = sqrt(x * x + y * y);
 	return radius;
 }
@@ -257,7 +256,7 @@ void StudentWorld::populateBoulder(int num)
 		int x = genRandNumber();
 		int y = genRandNumber();
 		bool isCovered = false;
-		for (int h = 0; h < 4; h++)
+		for (int h = 0; h < 4; h++)	// looks for 4x4 space that boulder image will appear
 		{
 			for (int g = 0; g < 4; g++)
 			{
@@ -271,10 +270,11 @@ void StudentWorld::populateBoulder(int num)
 					break;
 				}
 			}
+			
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			for (int h = 0; h < 4; h++)
+			for (int h = 0; h < 4; h++)	// removes ice
 			{
 				for (int g = 0; g < 4; g++)
 				{
@@ -282,7 +282,7 @@ void StudentWorld::populateBoulder(int num)
 					iceField[x + g][y + h] = nullptr;
 				}
 			}
-			currentActorVector.push_back(std::make_unique<Boulder>(this, x, y));
+			currentActorVector.push_back(std::make_unique<Boulder>(this, x, y)); // pushes new boulder
 		}
 		else
 		{

@@ -63,12 +63,13 @@ public:
 	*/
 	vector<vector<shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
 	vector<unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
-
-private:
-	shared_ptr<Actor> actorP_; //Actor smartPointer
 	int goldRemaining_;
 	int barrelsRemaining_;
 	int bouldersRemaining_;
+
+private:
+	shared_ptr<Actor> actorP_; //Actor smartPointer
+
 
 };
 
