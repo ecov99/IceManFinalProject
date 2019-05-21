@@ -175,8 +175,7 @@ void Boulder::doSomething()
 	// boulder is falling
 	if (isStable() == false && isFalling() == true && hasCollided() == false){
 		
-		// BUG: starts here somewhere
-		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
 			getWorld()->playSound(SOUND_FALLING_ROCK);
 			moveTo(getX(), getY() - 1);
@@ -187,8 +186,6 @@ void Boulder::doSomething()
 		{
 			setCollided(true);
 		}
-		// BUG: ends here somewhere
-
 	}
 	//Collision check
 	if (hasCollided() == true)
