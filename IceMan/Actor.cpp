@@ -200,12 +200,12 @@ void Boulder::doSomething()
 
 	}
 	//Collision check
-	if (hasCollided() == true)
+	/*if (hasCollided() == true)
 	{
 		setActive(false);
 
 
-	}
+	}*/
 	// boulder has landed
 	/*if (isStable() == false && hasFallen() == true) {
 			setActive(false);
@@ -225,10 +225,10 @@ void Boulder::setWaitingToFall(bool b) {
 	waitingToFall_ = b;
 }
 bool Boulder::isFalling() {
-	return fallen_;
+	return falling_;
 }
 void Boulder::setFalling(bool b) {
-	fallen_ = b;
+	falling_ = b;
 }
 bool Boulder::hasCollided() {
 	return collided_;
