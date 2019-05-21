@@ -144,7 +144,7 @@ public:
 		stable_ = true;
 		waitingToFall_ = false;
 		fallWaitCount_ = 20;
-		fallen_ = false;
+		falling_ = false;
 		collided_ = false;
 	}
 	~Boulder() {}
@@ -165,7 +165,7 @@ private:
 	bool stable_;
 	bool waitingToFall_;
 	int fallWaitCount_;
-	bool fallen_;
+	bool falling_;
 	bool collided_;
 };
 /*

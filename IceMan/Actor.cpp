@@ -143,7 +143,7 @@ int Iceman::getNumOfGold() {
 void Boulder::doSomething()
 {
 	// boulder is in the ice
-	if (isStable() == true && isFalling() == false) {
+	if (isStable() == true && isFalling() == false && hasCollided() == false) {
 
 		// checks for ice below if boulder is not waiting to fall
 		if (isWaitingToFall() == false) {
@@ -173,44 +173,28 @@ void Boulder::doSomething()
 	}
 
 	// boulder is falling
-	if (isFalling() == true){// hasFallen() == false) {
+	if (isStable() == false && isFalling() == true && hasCollided() == false){
 		
-		// moves boulder down if its not waiting to disappear
-		//if (waitingToDisappear_ == false) {
-			while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
-			{
-				getWorld()->playSound(SOUND_FALLING_ROCK);
-				moveTo(getX(), getY() - 1);
-			}
-			// boulder is now waiting to disappear
-			//setWaitingToDisappear(true);
+		// BUG: starts here somewhere
+		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+		{
+			getWorld()->playSound(SOUND_FALLING_ROCK);
+			moveTo(getX(), getY() - 1);
+		}
 
-			//Change collision if neccessary
-			if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
-			{
-				
-				setCollided(true);
-			}
-		//}
-		//else {	// gives boulder enough time to fall to ground
-		//	disappearWaitCount_--;
-		//	if (disappearWaitCount_ <= 0)
-		//		setFallen(true);
-		//}
+		//Change collision if neccessary
+		if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
+		{
+			setCollided(true);
+		}
+		// BUG: ends here somewhere
 
 	}
 	//Collision check
 	if (hasCollided() == true)
 	{
 		setActive(false);
-
-
 	}
-	// boulder has landed
-	/*if (isStable() == false && hasFallen() == true) {
-			setActive(false);
-	}*/
-
 }
 bool Boulder::isStable() {
 	return stable_;
@@ -225,10 +209,10 @@ void Boulder::setWaitingToFall(bool b) {
 	waitingToFall_ = b;
 }
 bool Boulder::isFalling() {
-	return fallen_;
+	return falling_;
 }
 void Boulder::setFalling(bool b) {
-	fallen_ = b;
+	falling_ = b;
 }
 bool Boulder::hasCollided() {
 	return collided_;
