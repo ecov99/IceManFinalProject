@@ -50,8 +50,6 @@ public:
 	int calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2);
 	bool noNeighbors(int x,  int y);
 
-	//void populateActor(int num, Actor A);
-	//void populateActor(int num, Actor A, bool isVis);
 	void populateBoulder(int num);
 	void populateGold(int num);
 	void populateBarrel(int num);

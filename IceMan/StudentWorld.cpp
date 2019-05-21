@@ -175,80 +175,6 @@ bool StudentWorld::noNeighbors(int x, int y)
 	return true;
 }
 
-//void StudentWorld::populateActor(int num, Actor A)
-//{
-//	for (int i = 0; i < num; i++)
-//	{
-//		int x = genRandNumber();
-//		int y = genRandNumber();
-//		bool isCovered = false;
-//		for (int h = 0; h < 4; h++)
-//		{
-//			for (int g = 0; g < 4; g++)
-//			{
-//				if (iceField[x + g][y + h] != nullptr)
-//				{
-//					isCovered = true;
-//				}
-//				else
-//				{
-//					isCovered = false;
-//					break;
-//				}
-//			}
-//		}
-//		if (isCovered && noNeighbors(x, y))
-//		{
-//			for (int h = 0; h < 4; h++)
-//			{
-//				for (int g = 0; g < 4; g++)
-//				{
-//					iceField[x + g][y + h].reset();
-//					iceField[x + g][y + h] = nullptr;
-//				}
-//			}
-//			currentActorVector.push_back(std::make_unique<A>(this, x, y));
-//		}
-//		else
-//		{
-//			i--; //used to reset counter to retry genRandNumber
-//		}
-//	}
-//}
-//
-//void StudentWorld::populateActor(int num, Actor A, bool isVis)
-//{
-//	for (int i = 0; i < num; i++)
-//	{
-//		int x = genRandNumber();
-//		int y = genRandNumber();
-//		bool isCovered = false;
-//		for (int h = 0; h < 4; h++)
-//		{
-//			for (int g = 0; g < 4; g++)
-//			{
-//				if (iceField[x + g][y + h] != nullptr)
-//				{
-//					isCovered = true;
-//				}
-//				else
-//				{
-//					isCovered = false;
-//					break;
-//				}
-//			}
-//		}
-//		if (isCovered && noNeighbors(x, y))
-//		{
-//			currentActorVector.push_back(std::make_unique<A>(this, x, y, isVis));
-//		}
-//		else
-//		{
-//			i--; //used to reset counter to retry genRandNumber
-//		}
-//	}
-//}
-
 void StudentWorld::populateBoulder(int num)
 {
 	for (int i = 0; i < num; i++)
@@ -372,7 +298,7 @@ void StudentWorld::removeDeadGameObject()
 int StudentWorld::genRandNumber()
 {
 	int num;
-	const int MIN_VALUE = 0;
+	const int MIN_VALUE = 1;
 	const int MAX_VALUE = 59;
 	unsigned seed = time(0);
 	srand(seed);
@@ -387,10 +313,6 @@ void StudentWorld::setDisplayText()
 	int lives = GameWorld::getLives();
 	int score = GameWorld::getScore();
 	
-	//int health = currentActorVector[0]->getHealth();
-	//int squirts = currentActor[0]->get_numOfSquirts();
-	//int sonar = currentActor[0]->get_numOfSonars();
-	//int gold = currentActor[0]->get_numOfGold();
 
 	int health = 0;
 	int squirts = 0;

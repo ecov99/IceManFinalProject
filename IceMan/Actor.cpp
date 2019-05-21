@@ -182,7 +182,7 @@ void Boulder::doSomething()
 		}
 
 		//Change collision if neccessary
-		if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
+		if (getWorld()->iceField[getX()][getY() - 1] != nullptr || getY() == 1)
 		{
 			setCollided(true);
 		}
