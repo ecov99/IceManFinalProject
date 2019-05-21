@@ -176,19 +176,17 @@ void Boulder::doSomething()
 	if (isStable() == false && isFalling() == true && hasCollided() == false){
 		
 		// BUG: starts here somewhere
-
 		while (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
 			getWorld()->playSound(SOUND_FALLING_ROCK);
 			moveTo(getX(), getY() - 1);
 		}
 
-		////Change collision if neccessary
-		//if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
-		//{
-		//	setCollided(true);
-		//}
-
+		//Change collision if neccessary
+		if (getWorld()->iceField[getX()][getY() - 1] != nullptr)
+		{
+			setCollided(true);
+		}
 		// BUG: ends here somewhere
 
 	}
