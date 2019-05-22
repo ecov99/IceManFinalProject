@@ -72,6 +72,7 @@ public:
 		: Actor(sw, id, x, y, dir, size, depth)
 	{
 		health_ = h;
+		numOfGold_ = 0;
 	}
 	virtual ~Character() {}
 
@@ -79,11 +80,15 @@ public:
 	virtual void annoyed();
 	virtual bool collisionCheck(int id);
 	int getHealth();
+	int getNumOfGold();
 	bool hasDied();
+
+	void incGold();
 
 private:
 	// attributes
 	int health_;
+	int numOfGold_;
 };
 
 /*
@@ -97,7 +102,6 @@ public:
 	{
 		numOfSquirts_ = 5;
 		numOfSonars_ = 1;
-		numOfGold_ = 0;
 		numOfOil_ = 0;
 		GraphObject::setVisible(true);
 	}
@@ -107,14 +111,12 @@ public:
 	virtual void doSomething();
 	int getNumOfSquirts();
 	int getNumOfSonars();
-	int getNumOfGold();
 	void increaseNumOfOil();
 
 private:
 	// attributes
 	int numOfSquirts_;
 	int numOfSonars_;
-	int numOfGold_;
 	int numOfOil_;
 	StudentWorld* sw_;
 };
@@ -199,17 +201,26 @@ class Gold : public Item
 {
 public:
 	// ctors & dtors
-	Gold(StudentWorld* sw, int x, int y, bool isVis) : Item(sw, IID_GOLD, x, y, right, 1, 2)
+	Gold(StudentWorld* sw, int x, int y, bool tempState) : Item(sw, IID_GOLD, x, y, right, 1, 2)
 	{
-		GraphObject::setVisible(isVis);
+		tempCount_ = 100;
+		tempState_ = tempState;
+		if (tempState_ == false)
+			GraphObject::setVisible(false);
+		else
+			GraphObject::setVisible(true);
 	}
 	~Gold() {}
 
 	// behaviors
 	virtual void doSomething();
+	bool isTemp();
+	int getTempCount();
 
 private:
 	// attributes
+	bool tempState_;
+	int tempCount_;
 };
 /*
 	Water Class

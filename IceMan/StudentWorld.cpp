@@ -110,7 +110,7 @@ void StudentWorld::cleanUp()
 	// Step 2) clear iceField; free smart ptrs AND vectors
 	for (int i = 0; i < 64; i++) {		// rows
 		for (int j = 0; j < 64; j++) {	// cols
-			cout << "J: " << j << " I: " << i << endl;
+			// cout << "J: " << j << " I: " << i << endl;
 			iceField[i][j].reset();
 		}
 		iceField[i].clear();
@@ -335,11 +335,10 @@ void StudentWorld::setDisplayText()
 	int lives = GameWorld::getLives();
 	int score = GameWorld::getScore();
 	
-	// need to static downcast to access Iceman getter functions
-	int health = 0;
-	int squirts = 0;
-	int sonar = 0;
-	int gold = 0;
+	int health = IcemanPtr_->getHealth();
+	int squirts = IcemanPtr_->getNumOfSquirts();
+	int sonar = IcemanPtr_->getNumOfSonars();
+	int gold = IcemanPtr_->getNumOfGold();
 	
 	temp = "Lvl: " + to_string(level) + " Lives: " + to_string(lives) +
 		" Hlth: " + to_string(health * 10) + "% Wtr: " + to_string(squirts) +
