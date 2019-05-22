@@ -74,7 +74,6 @@ void Iceman::doSomething()
 			}
 		}
 	}
-	
 	// player input 
 	int  ch;
 	if (getWorld()->getKey(ch) == true)
@@ -135,6 +134,11 @@ int Iceman::getNumOfSonars() {
 }
 int Iceman::getNumOfGold() {
 	return numOfGold_;
+}
+
+void Iceman::increaseNumOfOil()
+{
+	numOfOil_++;
 }
 
 /*
@@ -236,5 +240,39 @@ void Barrel::doSomething()
 		setVisible(true);
 		return;
 	}
+	//Player picks up Oil and reduces barrelsRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			{
+				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				{
+					getWorld()->decreaseBarrelsRemaining();
+					setActive(false);
+				}
+			}
+		}
+	}
 	
+}
+
+void Gold::doSomething()
+{
+	//Player picks up gold and reduces goldRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			{
+				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				{
+					getWorld()->decreaseGoldRemaining();
+					setActive(false);
+				}
+			}
+		}
+	}
 }

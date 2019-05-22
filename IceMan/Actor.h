@@ -96,6 +96,7 @@ public:
 		numOfSquirts_ = 5;
 		numOfSonars_ = 1;
 		numOfGold_ = 0;
+		numOfOil_ = 0;
 		GraphObject::setVisible(true);
 	}
 	~Iceman() {}
@@ -105,12 +106,14 @@ public:
 	int getNumOfSquirts();
 	int getNumOfSonars();
 	int getNumOfGold();
+	void increaseNumOfOil();
 
 private:
 	// attributes
 	int numOfSquirts_;
 	int numOfSonars_;
 	int numOfGold_;
+	int numOfOil_;
 	StudentWorld* sw_;
 };
 
@@ -201,7 +204,7 @@ public:
 	~Gold() {}
 
 	// behaviors
-	virtual void doSomething() {}
+	virtual void doSomething();
 
 private:
 	// attributes

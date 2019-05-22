@@ -101,16 +101,20 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
 	// Step 1) clear currentActor vector
-	currentActorVector.clear();
-
+	for (int i = 0; i < currentActorVector.size(); i++)
+	{
+		currentActorVector[i].release();
+		currentActorVector[i] = nullptr;
+	}
 	// Step 2) clear iceField; free smart ptrs AND vectors
 	for (int i = 0; i < 64; ++i) {		// rows
 		for (int j = 0; j < 64; ++j) {	// cols
 			iceField[j][i].reset();
 		}
-		iceField[i].clear();
+		//iceField[i].clear();
 	}
-	iceField.clear();
+	//iceField.clear();
+
 }
 
 
@@ -131,9 +135,19 @@ int StudentWorld::getBarrelsRemaining()
 	return barrelsRemaining_;
 }
 
+void StudentWorld::decreaseBarrelsRemaining()
+{
+	barrelsRemaining_--;
+}
+
 int StudentWorld::getGoldRemaining()
 {
 	return goldRemaining_;
+}
+
+void StudentWorld::decreaseGoldRemaining()
+{
+	goldRemaining_--;
 }
 
 int StudentWorld::calcDistance(int x, int y)
@@ -317,7 +331,7 @@ void StudentWorld::setDisplayText()
 	int health = 0;
 	int squirts = 0;
 	int sonar = 0;
-	int gold = 0;
+	int gold = getGoldRemaining();
 	
 	temp = "Lvl: " + to_string(level) + " Lives: " + to_string(lives) +
 		" Hlth: " + to_string(health * 10) + "% Wtr: " + to_string(squirts) +
