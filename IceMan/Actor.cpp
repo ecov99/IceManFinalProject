@@ -26,6 +26,13 @@ StudentWorld* Actor::getWorld() {
 		(IceMan and both Protestors)
 */
 void Character::annoyed() {}	// doesn't do anything
+bool Character::collisionCheck(int id)
+{
+	if (id == 0)
+		return false;
+	if (id == 1)
+		return true;
+}
 
 /*
 	CLASS: Player

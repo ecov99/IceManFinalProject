@@ -76,6 +76,7 @@ public:
 
 	// behaviors
 	virtual void annoyed();
+	virtual bool collisionCheck(int id);
 	int getHealth();
 	bool hasDied();
 
