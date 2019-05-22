@@ -39,7 +39,7 @@ int StudentWorld::init()
 		{
 			iceField[j][i] = make_shared<Ice>(this, j, i);
 		}
-		for (int p = 31; p < 34; p++)
+		for (int p = 31; p < 34; p++)	// middle of field
 		{
 			iceField[p][i] = nullptr;
 		}
@@ -324,8 +324,6 @@ int StudentWorld::genRandNumber()
 	int num;
 	const int MIN_VALUE = 1;
 	const int MAX_VALUE = 59;
-	unsigned seed = time(0);
-	srand(seed);
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
 	return num;
 }
