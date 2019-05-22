@@ -42,19 +42,11 @@ bool Character::collisionCheck(int id)
 int Character::getHealth() {
 	return health_;
 }
-int Character::getNumOfGold() {
-	return numOfGold_;
-}
 bool Character::hasDied() {
 	if (health_ <= 0)
 		return true;
 	else
 		return false;
-}
-
-void Character::incGold()
-{
-	numOfGold_++;
 }
 
 /*
@@ -177,7 +169,12 @@ int Iceman::getNumOfSquirts() {
 int Iceman::getNumOfSonars() {
 	return numOfSonars_;
 }
-void Iceman::increaseNumOfOil() {
+int Iceman::getNumOfGold() {
+	return numOfGold_;
+}
+
+void Iceman::increaseNumOfOil()
+{
 	numOfOil_++;
 }
 
@@ -291,6 +288,7 @@ void Barrel::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
+					getWorld()->playSound(SOUND_FOUND_OIL);
 					getWorld()->decBarrels();
 					setActive(false);
 				}
@@ -311,20 +309,11 @@ void Gold::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
-					getWorld()->IcemanPtr_->incGold();
+					getWorld()->playSound(SOUND_GOT_GOODIE);
+					getWorld()->decGold();
 					setActive(false);
 				}
 			}
 		}
 	}
-}
-
-bool Gold::isTemp()
-{
-	return tempState_;
-}
-
-int Gold::getTempCount()
-{
-	return tempCount_;
 }
