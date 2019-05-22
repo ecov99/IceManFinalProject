@@ -82,7 +82,6 @@ public:
 	int getHealth();
 	int getNumOfGold();
 	bool hasDied();
-
 	void incGold();
 
 private:

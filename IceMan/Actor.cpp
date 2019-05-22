@@ -83,7 +83,6 @@ void Iceman::doSomething()
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				getWorld()->increaseScore(10);
 				getWorld()->iceField[getX() + j][getY() + i].reset();
 				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
 			}
@@ -291,6 +290,7 @@ void Barrel::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
+					getWorld()->increaseScore(1000);
 					getWorld()->playSound(SOUND_FOUND_OIL);
 					getWorld()->decBarrels();
 					setActive(false);
@@ -312,6 +312,8 @@ void Gold::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
+					getWorld()->increaseScore(10);
+					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 					getWorld()->IcemanPtr_->incGold();
 					setActive(false);
 				}
