@@ -32,12 +32,12 @@ int StudentWorld::init()
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-	iceField.resize(64, std::vector<shared_ptr<Ice>>(64));
+	iceField.resize(64, vector<shared_ptr<Ice>>(64));
 	for (int i = 0; i < 60; i++)		// rows
 	{
 		for (int j = 0; j < 30; j++)	// left side
 		{
-			iceField[j][i] = std::make_shared<Ice>(this, j, i);
+			iceField[j][i] = make_shared<Ice>(this, j, i);
 		}
 		for (int p = 31; p < 34; p++)
 		{
@@ -45,11 +45,11 @@ int StudentWorld::init()
 		}
 		for (int k = 34; k < 64; k++)	// right side
 		{
-			iceField[k][i] = std::make_shared<Ice>(this, k, i);
+			iceField[k][i] = make_shared<Ice>(this, k, i);
 		}
 		for (int l = 0; l < 3; l++)		// bottom of shaft
 		{
-			iceField[i][l] = std::make_shared<Ice>(this, i, l);
+			iceField[i][l] = make_shared<Ice>(this, i, l);
 		}
 	}
 
@@ -101,21 +101,16 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
 	// Step 1) clear currentActor vector
-	for (int i = 0; i < currentActorVector.size(); i++)
-	{
-		currentActorVector[i].release();
-		currentActorVector[i] = nullptr;
-	}
+	currentActorVector.clear();
+
 	// Step 2) clear iceField; free smart ptrs AND vectors
 	for (int i = 0; i < 64; ++i) {		// rows
 		for (int j = 0; j < 64; ++j) {	// cols
 			iceField[j][i].reset();
 		}
-		//iceField[i].clear();
+		iceField[i].clear();
 	}
-	cout << endl;
-	//iceField.clear();
-
+	iceField.clear();
 }
 
 
@@ -136,36 +131,27 @@ int StudentWorld::getBarrelsRemaining()
 	return barrelsRemaining_;
 }
 
-void StudentWorld::decreaseBarrelsRemaining()
-{
-	barrelsRemaining_--;
-}
-
 int StudentWorld::getGoldRemaining()
 {
 	return goldRemaining_;
 }
 
-void StudentWorld::decreaseGoldRemaining()
-{
-	goldRemaining_--;
-}
-
-int StudentWorld::calcDistance(int x, int y)
+double StudentWorld::calcDistance(int x, int y)
 {
 	double radius = sqrt(x * x + y * y);
 	return radius;
 }
  
-int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2)
+double StudentWorld::calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2)
 {
 	int ix = act1->getX();
 	int iy = act1->getY();
 	int bx = act2->getX();
 	int by = act2->getY();
-	int x = std::abs(ix - bx);
-	int y = std::abs(iy - by);
-	int radius = sqrt(x * x + y * y);
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
+
+	double radius = sqrt(x * x + y * y);
 	return radius;
 }
 
@@ -223,7 +209,7 @@ void StudentWorld::populateBoulder(int num)
 					iceField[x + g][y + h] = nullptr;
 				}
 			}
-			currentActorVector.push_back(std::make_unique<Boulder>(this, x, y)); // pushes new boulder
+			currentActorVector.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
 		}
 		else
 		{
@@ -256,7 +242,7 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<Gold>(this, x, y, true));
+			currentActorVector.push_back(make_unique<Gold>(this, x, y, true));
 		}
 		else
 		{
@@ -289,7 +275,7 @@ void StudentWorld::populateBarrel(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<Barrel>(this, x, y));
+			currentActorVector.push_back(make_unique<Barrel>(this, x, y));
 		}
 		else
 		{
@@ -328,11 +314,11 @@ void StudentWorld::setDisplayText()
 	int lives = GameWorld::getLives();
 	int score = GameWorld::getScore();
 	
-
+	// need to static downcast to access Iceman getter functions
 	int health = 0;
 	int squirts = 0;
 	int sonar = 0;
-	int gold = getGoldRemaining();
+	int gold = 0;
 	
 	temp = "Lvl: " + to_string(level) + " Lives: " + to_string(lives) +
 		" Hlth: " + to_string(health * 10) + "% Wtr: " + to_string(squirts) +
