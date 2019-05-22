@@ -97,6 +97,7 @@ public:
 		numOfSquirts_ = 5;
 		numOfSonars_ = 1;
 		numOfGold_ = 0;
+		numOfOil_ = 0;
 		GraphObject::setVisible(true);
 	}
 	~Iceman() {}
@@ -106,12 +107,14 @@ public:
 	int getNumOfSquirts();
 	int getNumOfSonars();
 	int getNumOfGold();
+	void increaseNumOfOil();
 
 private:
 	// attributes
 	int numOfSquirts_;
 	int numOfSonars_;
 	int numOfGold_;
+	int numOfOil_;
 	StudentWorld* sw_;
 };
 
@@ -178,7 +181,7 @@ public:
 	// ctors & dtors
 	Barrel(StudentWorld* sw, int x, int y) : Item(sw, IID_BARREL, x, y, right, 1, 2)
 	{
-		GraphObject::setVisible(false);
+		GraphObject::setVisible(true);
 	}
 	~Barrel() {}
 
@@ -202,7 +205,7 @@ public:
 	~Gold() {}
 
 	// behaviors
-	virtual void doSomething() {}
+	virtual void doSomething();
 
 private:
 	// attributes

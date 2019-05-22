@@ -101,12 +101,16 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
 	// Step 1) clear currentActor vector
+	for (int i = 0; i < currentActorVector.size(); i++)
+	{
+		currentActorVector[i].reset();
+	}
 	currentActorVector.clear();
-
 	// Step 2) clear iceField; free smart ptrs AND vectors
-	for (int i = 0; i < 64; ++i) {		// rows
-		for (int j = 0; j < 64; ++j) {	// cols
-			iceField[j][i].reset();
+	for (int i = 0; i < 64; i++) {		// rows
+		for (int j = 0; j < 64; j++) {	// cols
+			cout << "J: " << j << " I: " << i << endl;
+			iceField[i][j].reset();
 		}
 		iceField[i].clear();
 	}
@@ -131,9 +135,19 @@ int StudentWorld::getBarrelsRemaining()
 	return barrelsRemaining_;
 }
 
+void StudentWorld::decBarrels()
+{
+	barrelsRemaining_--;
+}
+
 int StudentWorld::getGoldRemaining()
 {
 	return goldRemaining_;
+}
+
+void StudentWorld::decGold()
+{
+	goldRemaining_--;
 }
 
 double StudentWorld::calcDistance(int x, int y)

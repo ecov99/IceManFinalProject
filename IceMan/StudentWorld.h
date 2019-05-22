@@ -32,6 +32,7 @@ public:
 		barrelsRemaining_ = min(2 + l, 21);
 	}
 
+
 	virtual int init();
 	virtual int move();
 	virtual void cleanUp();
@@ -42,7 +43,9 @@ public:
 	*/
 	int getBouldersRemaining();
 	int getBarrelsRemaining();
+	void decBarrels();
 	int getGoldRemaining();
+	void decGold();
 
 	int genRandNumber();
 	void setDisplayText();

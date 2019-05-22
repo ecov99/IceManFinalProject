@@ -81,7 +81,6 @@ void Iceman::doSomething()
 			}
 		}
 	}
-	
 	// player input 
 	int  ch;
 	if (getWorld()->getKey(ch) == true)
@@ -174,6 +173,11 @@ int Iceman::getNumOfGold() {
 	return numOfGold_;
 }
 
+void Iceman::increaseNumOfOil()
+{
+	numOfOil_++;
+}
+
 /*
 	CLASS: Boulder
 */
@@ -189,9 +193,10 @@ void Boulder::doSomething()
 			{
 				for (int g = 0; g < 4; g++)
 				{
-					if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
-						count++;
-
+					if (getY() > 4) {
+						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+							count++;
+					}
 				}
 			}
 			// boulder is now waiting to fall
@@ -274,5 +279,39 @@ void Barrel::doSomething()
 		setVisible(true);
 		return;
 	}
+	//Player picks up Oil and reduces barrelsRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			{
+				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				{
+					getWorld()->decBarrels();
+					setActive(false);
+				}
+			}
+		}
+	}
 	
+}
+
+void Gold::doSomething()
+{
+	//Player picks up gold and reduces goldRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			{
+				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				{
+					getWorld()->decGold();
+					setActive(false);
+				}
+			}
+		}
+	}
 }
