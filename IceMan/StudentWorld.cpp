@@ -53,6 +53,7 @@ int StudentWorld::init()
 		}
 	}
 
+	genNumOfItems();
 	populateBoulder(bouldersRemaining_);
 	populateGold(goldRemaining_);
 	populateBarrel(barrelsRemaining_);
@@ -188,6 +189,14 @@ bool StudentWorld::noNeighbors(int x, int y)
 		}
 	}
 	return true;
+}
+
+void StudentWorld::genNumOfItems()
+{
+	int l = GameWorld::getLevel();
+	bouldersRemaining_ = min((l / 2) + 2, 9);
+	goldRemaining_ = max((5 - l) / 2, 2);
+	barrelsRemaining_ = min(2 + l, 21);
 }
 
 void StudentWorld::populateBoulder(int num)

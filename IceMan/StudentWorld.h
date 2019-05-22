@@ -25,12 +25,7 @@ public:
 	*/
 	StudentWorld(string assetDir)
 		: GameWorld(assetDir)
-	{
-		int l = GameWorld::getLevel();
-		bouldersRemaining_ = min((l / 2) + 2, 9);
-		goldRemaining_ = max((5 - l) / 2, 2);
-		barrelsRemaining_ = min(2 + l, 21);
-	}
+	{}
 
 
 	virtual int init();
@@ -53,6 +48,7 @@ public:
 	double calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2);
 	bool noNeighbors(int x,  int y);
 
+	void genNumOfItems();
 	void populateBoulder(int num);
 	void populateGold(int num);
 	void populateBarrel(int num);
