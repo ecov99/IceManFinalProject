@@ -288,6 +288,7 @@ void Barrel::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
+					getWorld()->playSound(SOUND_FOUND_OIL);
 					getWorld()->decBarrels();
 					setActive(false);
 				}
@@ -308,6 +309,7 @@ void Gold::doSomething()
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
+					getWorld()->playSound(SOUND_GOT_GOODIE);
 					getWorld()->decGold();
 					setActive(false);
 				}

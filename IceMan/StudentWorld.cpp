@@ -74,10 +74,12 @@ int StudentWorld::move()
 	if (IcemanPtr_->isActive() == false)	// if iceman/player died
 	{
 		decLives();
+		playSound(SOUND_PLAYER_GIVE_UP);
 		return GWSTATUS_PLAYER_DIED;
 	}
 	if (getBarrelsRemaining() <= 0)	// if iceman/player completed level
 	{
+		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
 	for (int i = 0; i < currentActorVector.size(); i++)
