@@ -113,6 +113,7 @@ void StudentWorld::cleanUp()
 		}
 		//iceField[i].clear();
 	}
+	cout << endl;
 	//iceField.clear();
 
 }
