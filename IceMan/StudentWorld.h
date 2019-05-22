@@ -66,9 +66,7 @@ public:
 	int bouldersRemaining_;
 
 private:
-	shared_ptr<Actor> actorP_; //Actor smartPointer
-
-
+	// shared_ptr<Iceman> IcemanPtr_; // points to currentActorVector[0]
 };
 
 #endif // STUDENTWORLD_H_

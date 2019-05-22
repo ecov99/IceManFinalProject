@@ -32,7 +32,7 @@ int StudentWorld::init()
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-	iceField.resize(64, std::vector<shared_ptr<Ice>>(64));
+	iceField.resize(64, vector<shared_ptr<Ice>>(64));
 	for (int i = 0; i < 60; i++)		// rows
 	{
 		for (int j = 0; j < 30; j++)	// left side
@@ -148,8 +148,8 @@ int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Acto
 	int iy = act1->getY();
 	int bx = act2->getX();
 	int by = act2->getY();
-	int x = std::abs(ix - bx);
-	int y = std::abs(iy - by);
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
 	int radius = sqrt(x * x + y * y);
 	return radius;
 }
@@ -313,7 +313,7 @@ void StudentWorld::setDisplayText()
 	int lives = GameWorld::getLives();
 	int score = GameWorld::getScore();
 	
-
+	// need to static downcast to access Iceman getter functions
 	int health = 0;
 	int squirts = 0;
 	int sonar = 0;

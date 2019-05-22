@@ -167,6 +167,8 @@ void Boulder::doSomething()
 			{
 				setStable(false);
 				setFalling(true);
+				// play sound for boulder falling
+				getWorld()->playSound(SOUND_FALLING_ROCK);
 			}
 		}
 
@@ -177,7 +179,6 @@ void Boulder::doSomething()
 		
 		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
-			getWorld()->playSound(SOUND_FALLING_ROCK);
 			moveTo(getX(), getY() - 1);
 		}
 
