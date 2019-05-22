@@ -186,9 +186,10 @@ void Boulder::doSomething()
 			{
 				for (int g = 0; g < 4; g++)
 				{
-					if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
-						count++;
-
+					if (getY() > 4) {
+						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+							count++;
+					}
 				}
 			}
 			// boulder is now waiting to fall
@@ -280,7 +281,7 @@ void Barrel::doSomething()
 			{
 				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
 				{
-					getWorld()->decreaseBarrelsRemaining();
+					getWorld()->decBarrels();
 					setActive(false);
 				}
 			}
@@ -300,7 +301,7 @@ void Gold::doSomething()
 			{
 				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
 				{
-					getWorld()->decreaseGoldRemaining();
+					getWorld()->decGold();
 					setActive(false);
 				}
 			}

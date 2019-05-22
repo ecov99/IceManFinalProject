@@ -180,7 +180,7 @@ public:
 	// ctors & dtors
 	Barrel(StudentWorld* sw, int x, int y) : Item(sw, IID_BARREL, x, y, right, 1, 2)
 	{
-		GraphObject::setVisible(false);
+		GraphObject::setVisible(true);
 	}
 	~Barrel() {}
 

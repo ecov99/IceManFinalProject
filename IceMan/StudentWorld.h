@@ -43,9 +43,9 @@ public:
 	*/
 	int getBouldersRemaining();
 	int getBarrelsRemaining();
-	void decreaseBarrelsRemaining();
+	void decBarrels();
 	int getGoldRemaining();
-	void decreaseGoldRemaining();
+	void decGold();
 
 	int genRandNumber();
 	void setDisplayText();
