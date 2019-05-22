@@ -64,8 +64,7 @@ public:
 	int barrelsRemaining_;
 	int bouldersRemaining_;
 
-private:
-	// shared_ptr<Iceman> IcemanPtr_; // points to currentActorVector[0]
+	unique_ptr<Iceman> IcemanPtr_; // points to IcemanPtr_
 };
 
 #endif // STUDENTWORLD_H_

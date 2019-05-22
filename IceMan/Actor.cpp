@@ -267,8 +267,8 @@ void Boulder::setCollided(bool b) {
 void Barrel::doSomething()
 {
 	//Calculate distance from Iceman
-	int ix = getWorld()->currentActorVector[0]->getX();
-	int iy = getWorld()->currentActorVector[0]->getY();
+	int ix = getWorld()->IcemanPtr_->getX();
+	int iy = getWorld()->IcemanPtr_->getY();
 	int bx = getX();
 	int by = getY();
 	int x = abs(ix - bx);
@@ -284,9 +284,9 @@ void Barrel::doSomething()
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			if (getWorld()->IcemanPtr_->getX() == getX() + i)
 			{
-				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
 					getWorld()->decBarrels();
 					setActive(false);
@@ -304,9 +304,9 @@ void Gold::doSomething()
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			if (getWorld()->currentActorVector[0]->getX() == getX() + i)
+			if (getWorld()->IcemanPtr_->getX() == getX() + i)
 			{
-				if (getWorld()->currentActorVector[0]->getY() == getY() + j)
+				if (getWorld()->IcemanPtr_->getY() == getY() + j)
 				{
 					getWorld()->decGold();
 					setActive(false);

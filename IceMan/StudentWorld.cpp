@@ -24,11 +24,9 @@ Initializes world at the start of each level.
 int StudentWorld::init()
 {
 	//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
-	// Player WILL ALWAYS BE currentActorVector[0]
-	if (currentActorVector.empty())
-	{
-		currentActorVector.push_back(make_unique<Iceman>(this));
-	}
+	// Player WILL ALWAYS BE IcemanPtr_
+	IcemanPtr_ = make_unique<Iceman>(this);
+	
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
@@ -71,21 +69,23 @@ int StudentWorld::move()
 	setDisplayText();
 
 	// Step 2) give each Actor a chance to do something
+	IcemanPtr_->doSomething();
+
+	if (IcemanPtr_->isActive() == false)	// if iceman/player died
+	{
+		decLives();
+		return GWSTATUS_PLAYER_DIED;
+	}
+	if (getBarrelsRemaining() <= 0)	// if iceman/player completed level
+	{
+		return GWSTATUS_FINISHED_LEVEL;
+	}
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
 		if (currentActorVector[i]->isActive())		// if currentActor is active
 		{
 			currentActorVector[i]->doSomething();	// actor will do something
 
-			if (currentActorVector[0]->isActive() == false)	// if iceman/player died
-			{
-				decLives();
-				return GWSTATUS_PLAYER_DIED;
-			}
-			if (getBarrelsRemaining() <= 0)	// if iceman/player completed level
-			{
-				return GWSTATUS_FINISHED_LEVEL;
-			}
 		}
 	}
 	// Step 3) remove newly dead actors after each tick

@@ -34,6 +34,7 @@ public:
 	void setActive(bool b);
 	StudentWorld* getWorld();
 
+
 private:
 	// attributes
 	bool active_;
