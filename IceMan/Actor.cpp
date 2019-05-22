@@ -83,43 +83,73 @@ void Iceman::doSomething()
 		switch (ch)
 		{
 		case KEY_PRESS_LEFT:
-			//Move player to the left
-			if (getX() > 0)
+			// change direction
+			if (getDirection() != left)	
 			{
-				moveTo(getX() - 1, getY());
 				setDirection(left);
 			}
-			break;
-		case KEY_PRESS_RIGHT:
-			//Move player to the right
-			if (getX() < 60)
+			// move
+			else
 			{
-				moveTo(getX() + 1, getY());
+				// if space is in bounds
+				if (getX() > 0)
+				{
+					moveTo(getX() - 1, getY());
+				}
+			}
+			break;
+
+		case KEY_PRESS_RIGHT:
+			// change direction
+			if (getDirection() != right)
+			{
 				setDirection(right);
 			}
-			break;
-		case KEY_PRESS_DOWN:
-			//Move player down
-			if (getY() > 0)
+			// move
+			else
 			{
-				moveTo(getX(), getY() - 1);
+				// if space is in bounds
+				if (getX() < 60)
+				{
+					moveTo(getX() + 1, getY());
+				}
+			}
+			break;
+
+		case KEY_PRESS_DOWN:
+			// change direction
+			if (getDirection() != down)
+			{
 				setDirection(down);
 			}
-			break;
-		case KEY_PRESS_UP:
-			//Move player up
-			if (getY() < 60)
+			// move
+			else
 			{
-				moveTo(getX(), getY() + 1);
-				setDirection(up);
+				// if space is in bounds
+				if (getY() > 0)
+				{
+					moveTo(getX(), getY() - 1);
+				}
 			}
 			break;
-		case KEY_PRESS_SPACE:
-			//Add a squirt in front of the player
+
+		case KEY_PRESS_UP:
+			// change direction
+			if (getDirection() != up)
+			{
+				setDirection(up);
+			}
+			// move
+			else
+			{
+				// if space is in bounds
+				if (getY() < 60)
+				{
+					moveTo(getX(), getY() + 1);
+				}
+			}
 			break;
-		case KEY_PRESS_TAB:
-			//
-			break;
+
 		case KEY_PRESS_ESCAPE:
 			// stop program
 			exit(0);
