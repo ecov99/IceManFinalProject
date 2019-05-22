@@ -37,7 +37,7 @@ int StudentWorld::init()
 	{
 		for (int j = 0; j < 30; j++)	// left side
 		{
-			iceField[j][i] = std::make_shared<Ice>(this, j, i);
+			iceField[j][i] = make_shared<Ice>(this, j, i);
 		}
 		for (int p = 31; p < 34; p++)
 		{
@@ -45,11 +45,11 @@ int StudentWorld::init()
 		}
 		for (int k = 34; k < 64; k++)	// right side
 		{
-			iceField[k][i] = std::make_shared<Ice>(this, k, i);
+			iceField[k][i] = make_shared<Ice>(this, k, i);
 		}
 		for (int l = 0; l < 3; l++)		// bottom of shaft
 		{
-			iceField[i][l] = std::make_shared<Ice>(this, i, l);
+			iceField[i][l] = make_shared<Ice>(this, i, l);
 		}
 	}
 
@@ -136,13 +136,13 @@ int StudentWorld::getGoldRemaining()
 	return goldRemaining_;
 }
 
-int StudentWorld::calcDistance(int x, int y)
+double StudentWorld::calcDistance(int x, int y)
 {
 	double radius = sqrt(x * x + y * y);
 	return radius;
 }
  
-int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2)
+double StudentWorld::calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2)
 {
 	int ix = act1->getX();
 	int iy = act1->getY();
@@ -150,7 +150,8 @@ int StudentWorld::calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Acto
 	int by = act2->getY();
 	int x = abs(ix - bx);
 	int y = abs(iy - by);
-	int radius = sqrt(x * x + y * y);
+
+	double radius = sqrt(x * x + y * y);
 	return radius;
 }
 
@@ -208,7 +209,7 @@ void StudentWorld::populateBoulder(int num)
 					iceField[x + g][y + h] = nullptr;
 				}
 			}
-			currentActorVector.push_back(std::make_unique<Boulder>(this, x, y)); // pushes new boulder
+			currentActorVector.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
 		}
 		else
 		{
@@ -241,7 +242,7 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<Gold>(this, x, y, true));
+			currentActorVector.push_back(make_unique<Gold>(this, x, y, true));
 		}
 		else
 		{
@@ -274,7 +275,7 @@ void StudentWorld::populateBarrel(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(std::make_unique<Barrel>(this, x, y));
+			currentActorVector.push_back(make_unique<Barrel>(this, x, y));
 		}
 		else
 		{

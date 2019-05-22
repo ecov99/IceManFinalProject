@@ -259,8 +259,8 @@ void Barrel::doSomething()
 	int iy = getWorld()->currentActorVector[0]->getY();
 	int bx = getX();
 	int by = getY();
-	int x = std::abs(ix - bx);
-	int y = std::abs(iy - by);
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
 	double radius = sqrt(x * x + y * y);
 	if (isVisible() == false && radius <= 4)
 	{

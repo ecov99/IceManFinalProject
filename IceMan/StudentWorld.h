@@ -23,7 +23,7 @@ public:
 	Given Functions
 		- will never be called in our code/manually
 	*/
-	StudentWorld(std::string assetDir)
+	StudentWorld(string assetDir)
 		: GameWorld(assetDir)
 	{
 		int l = GameWorld::getLevel();
@@ -46,8 +46,8 @@ public:
 
 	int genRandNumber();
 	void setDisplayText();
-	int calcDistance(int x, int y);
-	int calcDistance(std::unique_ptr<Actor> act1, std::unique_ptr<Actor> act2);
+	double calcDistance(int x, int y);
+	double calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2);
 	bool noNeighbors(int x,  int y);
 
 	void populateBoulder(int num);
