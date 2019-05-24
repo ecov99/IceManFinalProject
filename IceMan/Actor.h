@@ -30,9 +30,6 @@ public:
 	virtual ~Actor()
 	{}
 
-	// copy ctor
-	Actor(const Actor &other) = default;
-
 	// behaviors
 	virtual void doSomething() {};
 	bool isActive();
