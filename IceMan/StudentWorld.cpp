@@ -23,31 +23,39 @@ Initializes world at the start of each level.
  */
 int StudentWorld::init()
 {
-	//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
-	// Player WILL ALWAYS BE IcemanPtr_
+	//Step 1) Create Iceman
 	IcemanPtr_ = new Iceman(this);
-	test_ = new RegularProtestor(this, getLevel());
+	
+	//Step 2) Construct iceField
 
-	//Step 2) Construct new oil field that meets new level requirements 
-	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-	iceField.resize(64, vector<shared_ptr<Ice>>(64));
-	for (int i = 0; i < 60; i++)		// rows
-	{
-		for (int j = 0; j < 30; j++)	// left side
-		{
-			iceField[j][i] = make_shared<Ice>(this, j, i);
+	// BOTTOM of field
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 4; j++) {
+			iceField_[i][j] = new Ice(this, i, j);
 		}
-		for (int p = 31; p < 34; p++)	// middle of field
-		{
-			iceField[p][i] = nullptr;
+	}
+	// LEFT side of field
+	for (int k = 0; k < 30; k++) {
+		for (int l = 4; l < 60; l++) {
+			iceField_[k][l] = new Ice(this, k, l);
 		}
-		for (int k = 34; k < 64; k++)	// right side
-		{
-			iceField[k][i] = make_shared<Ice>(this, k, i);
+	}
+	// MIDDLE of field
+	for (int m = 30; m < 34; m++) {
+		for (int n = 4; n < 60; n++) {
+			iceField_[m][n] = nullptr;
 		}
-		for (int l = 0; l < 3; l++)		// bottom of shaft
-		{
-			iceField[i][l] = make_shared<Ice>(this, i, l);
+	}
+	// RIGHT side of field
+	for (int o = 34; o < 64; o++) {
+		for (int p = 4; p < 60; p++) {
+			iceField_[o][p] = new Ice(this, o, p);
+		}
+	}
+	// TOP of field
+	for (int q = 0; q < 64; q++) {
+		for (int r = 60; r < 64; r++) {
+			iceField_[q][r] = nullptr;
 		}
 	}
 
@@ -70,7 +78,7 @@ int StudentWorld::move()
 
 	// Step 2) give each Actor a chance to do something
 	IcemanPtr_->doSomething();
-	test_->doSomething();
+
 	if (IcemanPtr_->isActive() == false)	// if iceman/player died
 	{
 		decLives();
@@ -82,20 +90,11 @@ int StudentWorld::move()
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
-	for (int i = 0; i < currentActorVector.size(); i++)
+	for (int i = 0; i < currentActors.size(); i++)
 	{
-		if (currentActorVector[i]->isActive())		// if currentActor is active
+		if (currentActors[i]->isActive())		// if currentActor is active
 		{
-			currentActorVector[i]->doSomething();	// actor will do something
-
-		}
-	}
-	for (int i = 0; i < currentBoulders.size(); i++)
-	{
-		if (currentBoulders[i]->isActive())		// if currentActor is active
-		{
-			currentBoulders[i]->doSomething();	// actor will do something
-
+			currentActors[i]->doSomething();	// actor will do something
 		}
 	}
 
@@ -114,32 +113,23 @@ void StudentWorld::cleanUp()
 {
 	// Step 1) delete Iceman
 	delete IcemanPtr_;
+	IcemanPtr_ = nullptr;
 	
-	// Step 2) clear currentActor vector
-	for (int i = 0; i < currentActorVector.size(); i++)
-	{
-		currentActorVector[i].reset();
+	// Step 2) clear currentActors vector
+	for (int i = 0; i < currentActors.size(); i++) {
+		delete currentActors[i];
+		currentActors[i] = nullptr;
 	}
-	currentActorVector.clear();
-
-	// Step 3) clear currentBoulders
-	for (int i = 0; i < currentBoulders.size(); i++)
-	{
-		currentBoulders[i].reset();
-	}
-	currentBoulders.clear();
+	currentActors.clear();
 
 	// Step 4) clear iceField; free smart ptrs AND vectors
-	for (int i = 0; i < 64; i++) {		// rows
-		for (int j = 0; j < 64; j++) {	// cols
-			// cout << "J: " << j << " I: " << i << endl;
-			iceField[i][j].reset();
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 64; j++) {
+			delete iceField_[i][j];
+			iceField_[i][j] = nullptr;
 		}
-		iceField[i].clear();
 	}
-	iceField.clear();
 }
-
 
 
 /*
@@ -175,16 +165,16 @@ void StudentWorld::decGold()
 
 bool StudentWorld::noNeighbors(int x, int y)
 {
-	for (int k = 0; k < currentActorVector.size(); k++)
+	for (int h = 0; h < currentActors.size(); h++)
 	{
 		for (int i = 0; i < 4; i++)
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				if (currentActorVector[k]->getX() == x + i ||
-					currentActorVector[k]->getY() == y + j ||
-					currentActorVector[k]->getX() + i == x ||
-					currentActorVector[k]->getY() + j == y)
+				if (currentActors[h]->getX() == x + i ||
+					currentActors[h]->getY() == y + j ||
+					currentActors[h]->getX() + i == x ||
+					currentActors[h]->getY() + j == y)
 				{
 					return false;
 				}
@@ -204,43 +194,40 @@ void StudentWorld::genNumOfItems()
 
 void StudentWorld::populateBoulder(int num)
 {
-	for (int i = 0; i < num; i++)
+	for (int h = 0; h < num; h++)
 	{
 		int x = genRandNumber();
 		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)	// looks for 4x4 space that boulder image will appear
-		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField[x + g][y + h] != nullptr)
-				{
+		bool isCovered;
+
+		// looks for 4x4 space that boulder image will appear
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (iceField_[x + i][y + i] != nullptr) {
 					isCovered = true;
 				}
-				else
-				{
+				else {
 					isCovered = false;
 					break;
 				}
 			}
-			
 		}
+
+		// location found for boulder, remove ice
 		if (isCovered && noNeighbors(x, y))
 		{
-			for (int h = 0; h < 4; h++)	// removes ice
-			{
-				for (int g = 0; g < 4; g++)
-				{
-					iceField[x + g][y + h].reset();
-					iceField[x + g][y + h] = nullptr;
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					delete iceField_[x + m][y + n];
+					iceField_[x + m][y + n] = nullptr;
 				}
 			}
-			currentBoulders.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
+			// pushes new boulder
+			Boulder* temp = new Boulder(this, x, y);
+			currentActors.push_back(temp);
 		}
-		else
-		{
-			i--; //used to reset counter to retry genRandNumber
-		}
+		else	// reset counter and find new random numbers
+			h--;
 	}
 }
 
@@ -255,7 +242,7 @@ void StudentWorld::populateGold(int num)
 		{
 			for (int g = 0; g < 4; g++)
 			{
-				if (iceField[x + g][y + h] != nullptr)
+				if (iceField_[x + g][y + h] != nullptr)
 				{
 					isCovered = true;
 				}
@@ -268,7 +255,8 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(make_unique<Gold>(this, x, y, true));
+			Gold* temp = new Gold(this, x, y, true);	// for testing, needs to be false
+			currentActors.push_back(temp);
 		}
 		else
 		{
@@ -288,7 +276,7 @@ void StudentWorld::populateBarrel(int num)
 		{
 			for (int g = 0; g < 4; g++)
 			{
-				if (iceField[x + g][y + h] != nullptr)
+				if (iceField_[x + g][y + h] != nullptr)
 				{
 					isCovered = true;
 				}
@@ -301,7 +289,8 @@ void StudentWorld::populateBarrel(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			currentActorVector.push_back(make_unique<Barrel>(this, x, y));
+			Barrel* temp = new Barrel(this, x, y);
+			currentActors.push_back(temp);
 		}
 		else
 		{
@@ -312,61 +301,22 @@ void StudentWorld::populateBarrel(int num)
 
 void StudentWorld::removeDeadGameObject()
 {
-	// clear current Actors
-	for (int i = 0; i < currentActorVector.size(); i++)
-	{
-		if (currentActorVector[i]->isActive() == false)
-		{
-			currentActorVector.erase(currentActorVector.begin() + i);
+	// clears inactive actors
+	for (int i = 0; i < currentActors.size(); i++) {
+		if (currentActors[i]->isActive() == false) {
+			delete currentActors[i];
+			currentActors[i] = nullptr;
+			currentActors.erase(currentActors.begin() + i);
 			i--;
 		}
 	}
-
-	// clear current Boulders
-	for (int i = 0; i < currentBoulders.size(); i++)
-	{
-		if (currentBoulders[i]->isActive() == false)
-		{
-			currentBoulders.erase(currentBoulders.begin() + i);
-			i--;
-		}
-	}
-}
-
-bool StudentWorld::checkForBoulders() {
-	// loop through all boulders
-	for (int i = 0; i < currentBoulders.size(); i++) {
-
-		// calculate distance
-		// calcDistance(IcemanPtr_, currentBoulders[i]);
-	}
-	return false;
-}
-
-double StudentWorld::calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder>& B)
-{
-	double Ax = A->getX();
-	double Ay = A->getY();
-	double Bx = B->getX();
-	double By = B->getY();
-
-	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
 
 int StudentWorld::genRandNumber()
 {
 	int num;
 	const int MIN_VALUE = 1;
-	const int MAX_VALUE = 59;
-	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
-	return num;
-}
-
-int StudentWorld::genRandNumber(int min, int max)
-{
-	int num;
-	const int MIN_VALUE = min;
-	const int MAX_VALUE = max;
+	const int MAX_VALUE = 56;
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
 	return num;
 }

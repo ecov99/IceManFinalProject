@@ -6,16 +6,9 @@
 	Will also declare functions and data members.
 */
 #include "GraphObject.h"
-#include <algorithm>
-#include <memory>
 using namespace std;
 
 class StudentWorld;
-
-struct Coordinate {
-	int xCoordinate;
-	int yCoordinate;
-};
 
 /*
 	CLASS: Actor
@@ -32,25 +25,24 @@ public:
 	{
 		active_ = true;
 		sw_ = sw;
-		Location_.xCoordinate = startX;
-		Location_.yCoordinate = startY;
 	}
 	virtual ~Actor()
 	{}
 
+	// copy ctor
+	Actor(const Actor &other) = default;
+
 	// behaviors
-	virtual void doSomething() = 0;
+	virtual void doSomething() {};
 	bool isActive();
 	void setActive(bool b);
 	StudentWorld* getWorld();
-	void setLocation(int x, int y);
-	Coordinate getLocation();
+	double calcDistance(Actor &other);
 
 private:
 	// attributes
 	bool active_;
 	StudentWorld* sw_;
-	Coordinate Location_;
 
 };
 
@@ -215,22 +207,20 @@ public:
 class Character : public Actor {
 public:
 	// ctors & dtors
-	Character(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, int health)
+	Character(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, int h)
 		: Actor(sw, id, x, y, dir, size, depth)
 	{
-		health_ = health;
+		health_ = h;
 		numOfGold_ = 0;
 	}
 	virtual ~Character() {}
 
 	// behaviors
 	virtual void annoyed() {}
-	virtual bool collisionCheck(int id);
 	int getHealth();
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
-	bool checkForBoulders(int k);
 
 private:
 	// attributes
@@ -256,6 +246,7 @@ public:
 
 	// behaviors
 	virtual void doSomething();
+	bool checkForBoulders(int k);
 	int getNumOfSquirts();
 	int getNumOfSonars();
 	void increaseNumOfOil();
@@ -268,43 +259,4 @@ private:
 	StudentWorld* sw_;
 };
 
-class Protestor : public Character {
-public:
-	// ctors & dtors
-	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 60, 60, left, 1, 0, health)
-	{
-		setVisible(true);
-		leaveOilFieldState_ = false;
-		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
-		level_ = level;
-		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
-	}
-
-	//behaviors
-	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
-	virtual void doSomething() {}
-	// attributes
-	bool leaveOilFieldState_;
-	int numSquaresToMoveInCurrentDirection_;
-	int ticksToWaitBetweenMoves_;
-	int level_;
-	
-};
-
-class RegularProtestor : public Protestor {
-public:
-	RegularProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_PROTESTER,5, level) {}
-
-	//behaviors
-	virtual void doSomething();
-	
-};
-
-class HardcoreProtestor : public Protestor {
-public:
-	HardcoreProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_HARD_CORE_PROTESTER, 20, level) {}
-
-	//behaviors
-	virtual void doSomething();
-};
 #endif // ACTOR_H_
