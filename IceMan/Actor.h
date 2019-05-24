@@ -6,15 +6,9 @@
 	Will also declare functions and data members.
 */
 #include "GraphObject.h"
-#include <memory>
 using namespace std;
 
 class StudentWorld;
-
-struct Coordinate {
-	int xCoordinate;
-	int yCoordinate;
-};
 
 /*
 	CLASS: Actor
@@ -31,24 +25,24 @@ public:
 	{
 		active_ = true;
 		sw_ = sw;
-		Location_.xCoordinate = startX;
-		Location_.yCoordinate = startY;
 	}
 	virtual ~Actor()
 	{}
 
+	// copy ctor
+	Actor(const Actor &other) = default;
+
 	// behaviors
-	virtual void doSomething() = 0;
+	virtual void doSomething() {};
 	bool isActive();
 	void setActive(bool b);
 	StudentWorld* getWorld();
-	void setLocation(int x, int y);
+	double calcDistance(Actor &other);
 
 private:
 	// attributes
 	bool active_;
 	StudentWorld* sw_;
-	Coordinate Location_;
 
 };
 
@@ -223,7 +217,6 @@ public:
 
 	// behaviors
 	virtual void annoyed() {}
-	virtual bool collisionCheck(int id);
 	int getHealth();
 	int getNumOfGold();
 	bool hasDied();

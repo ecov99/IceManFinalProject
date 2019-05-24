@@ -9,7 +9,6 @@
 #include "Actor.h"
 #include <string>
 #include <vector>
-#include <memory>
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
@@ -48,20 +47,16 @@ public:
 
 	void genNumOfItems();
 	void populateBoulder(int num);
-	//void populateGold(int num);
-	//void populateBarrel(int num);
+	void populateGold(int num);
+	void populateBarrel(int num);
 
 	void removeDeadGameObject();
-	//bool checkForBoulders();
-
-	double calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder> &B);
 
 	/*
 	Personal Data (variables, structures, etc.)
 	*/
-	Ice* iceField_[64][64];							// Creates a 2D array of Ice pointers
-	vector<unique_ptr<Actor>> currentActorVector;	// Vector that stores Actors currently alive
-	vector<unique_ptr<Boulder>> currentBoulders;
+	Ice* iceField_[64][64];			// creates a 2D array of Ice pointers
+	vector<Actor*> currentActors;	// holds all active actors
 	int goldRemaining_;
 	int barrelsRemaining_;
 	int bouldersRemaining_;
