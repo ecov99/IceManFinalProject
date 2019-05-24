@@ -13,7 +13,9 @@ class StudentWorld;
 
 /*
 	CLASS: Actor
-Base Class for all other classes.
+	Abstract Base Class for all other classes.
+	Cannot be instantiated.
+	Child Classes: Ice, Boulder, Squirt, Item, Character
 */
 class Actor : public GraphObject
 {
@@ -59,92 +61,15 @@ public:
 	// behaviors
 	virtual void doSomething() {}	// ice doesn't do anything
 };
-
-/*
-	CLASS: Character
-	Abstract Base Class for all objects that can be annoyed()
-		(IceMan and both Protestors)
-*/
-class Character : public Actor {
-public:
-	// ctors & dtors
-	Character(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, int h)
-		: Actor(sw, id, x, y, dir, size, depth)
-	{
-		health_ = h;
-		numOfGold_ = 0;
-	}
-	virtual ~Character() {}
-
-	// behaviors
-	virtual void annoyed();
-	virtual bool collisionCheck(int id);
-	int getHealth();
-	int getNumOfGold();
-	bool hasDied();
-	void incGold();
-
-private:
-	// attributes
-	int health_;
-	int numOfGold_;
-};
-
-/*
-	CLASS: Iceman
-	User controlled player.
-*/
-class Iceman : public Character {
-public:
-	// ctors & dtors
-	Iceman(StudentWorld* sw) : Character(sw, IID_PLAYER, 30, 60, right, 1, 0, 10)
-	{
-		numOfSquirts_ = 5;
-		numOfSonars_ = 1;
-		numOfOil_ = 0;
-		GraphObject::setVisible(true);
-	}
-	~Iceman() {}
-
-	// behaviors
-	virtual void doSomething();
-	int getNumOfSquirts();
-	int getNumOfSonars();
-	void increaseNumOfOil();
-
-private:
-	// attributes
-	int numOfSquirts_;
-	int numOfSonars_;
-	int numOfOil_;
-	StudentWorld* sw_;
-};
-
-/*
-	CLASS: Item
-	Base Class for all items.
-*/
-class Item : public Actor
-{
-public:
-	// ctors & dtors
-	Item(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth)
-		: Actor(sw, id, x, y, dir, size, depth)
-	{}
-	virtual ~Item() {}
-
-	// behaviors
-private:
-	// attributes
-};
 /*
 	CLASS: Boulder
+	Starts off stable. Falls once ice below is mined by Iceman.
 */
-class Boulder : public Item
+class Boulder : public Actor
 {
 public:
 	// ctors & dtors
-	Boulder(StudentWorld* sw, int x, int y) : Item(sw, IID_BOULDER, x, y, down, 1, 1)
+	Boulder(StudentWorld* sw, int x, int y) : Actor(sw, IID_BOULDER, x, y, down, 1, 1)
 	{
 		GraphObject::setVisible(true);
 		stable_ = true;
@@ -175,7 +100,42 @@ private:
 	bool collided_;
 };
 /*
-	CLASS: Barrel
+	Squirt Class
+*/
+class Squirt : public Actor
+{
+public:
+};
+
+/*
+	CLASS: Item
+	Abstract Base Class for all items that can be picked up.
+	Cannot be instantiated.
+	They will have a state, temporary or permanent.
+	Child Classes: Barrel, Gold, Water
+*/
+class Item : public Actor
+{
+public:
+	// ctors & dtors
+	Item(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth)
+		: Actor(sw, id, x, y, dir, size, depth)
+	{}
+	virtual ~Item() {}
+
+	// behaviors
+	bool IcemanCanPickUp();
+	bool ProtestorCanPickUp();
+
+private:
+	// attributes
+	bool IcemanCanPickUp_;
+	bool ProtestorCanPickUp_;
+};
+
+/*
+	CLASS: Barrel (Oil)
+	Once all Barrels are picked up from Iceman, the level ends.
 */
 class Barrel : public Item
 {
@@ -228,20 +188,73 @@ class Water : public Item
 {
 public:
 };
-
-/*
-	Squirt Class
-*/
-class Squirt : public Item
-{
-public:
-};
 /*
 	Sonar Class
 */
 class Sonar : public Item
 {
 public:
+};
+
+/*
+	CLASS: Character
+	Abstract Base Class for all objects that can be annoyed()
+	Cannot be instantiated.
+	Child Classes: Iceman, Protestor
+*/
+class Character : public Actor {
+public:
+	// ctors & dtors
+	Character(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, int h)
+		: Actor(sw, id, x, y, dir, size, depth)
+	{
+		health_ = h;
+		numOfGold_ = 0;
+	}
+	virtual ~Character() {}
+
+	// behaviors
+	virtual void annoyed() {}
+	virtual bool collisionCheck(int id);
+	int getHealth();
+	int getNumOfGold();
+	bool hasDied();
+	void incGold();
+
+private:
+	// attributes
+	int health_;
+	int numOfGold_;
+};
+
+/*
+	CLASS: Iceman
+	User controlled player.
+*/
+class Iceman : public Character {
+public:
+	// ctors & dtors
+	Iceman(StudentWorld* sw) : Character(sw, IID_PLAYER, 30, 60, right, 1, 0, 10)
+	{
+		numOfSquirts_ = 5;
+		numOfSonars_ = 1;
+		numOfOil_ = 0;
+		GraphObject::setVisible(true);
+	}
+	~Iceman() {}
+
+	// behaviors
+	virtual void doSomething();
+	int getNumOfSquirts();
+	int getNumOfSonars();
+	void increaseNumOfOil();
+
+private:
+	// attributes
+	int numOfSquirts_;
+	int numOfSonars_;
+	int numOfOil_;
+	StudentWorld* sw_;
 };
 
 #endif // ACTOR_H_

@@ -8,8 +8,9 @@
 /*
 	CLASS: Actor
 	Abstract Base Class for all other classes.
+	Cannot be instantiated.
+	Child Classes: Ice, Boulder, Squirt, Item, Character
 */
-//void Actor::doSomething() {}	// doesn't do anything
 bool Actor::isActive() {
 	return active_;
 }
@@ -19,13 +20,179 @@ void Actor::setActive(bool b) {
 StudentWorld* Actor::getWorld() {
 	return sw_;
 }
+/*
+	CLASS: Boulder
+	Starts off stable. Falls once ice below is mined by Iceman.
+*/
+void Boulder::doSomething()
+{
+	// boulder is in the ice
+	if (isStable() == true && isFalling() == false && hasCollided() == false) {
+
+		// checks for ice below if boulder is not waiting to fall
+		if (isWaitingToFall() == false) {
+			int count = 0;
+			for (int h = 0; h < 4; h++)
+			{
+				for (int g = 0; g < 4; g++)
+				{
+					if (getY() > 4) {
+						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+							count++;
+					}
+				}
+			}
+			// boulder is now waiting to fall
+			if (count == 16)
+				setWaitingToFall(true);
+		}
+		else {	// gives boulder a pause before falling
+			fallWaitCount_--;
+			if (fallWaitCount_ <= 0)
+			{
+				setStable(false);
+				setFalling(true);
+				// play sound for boulder falling
+				getWorld()->playSound(SOUND_FALLING_ROCK);
+			}
+		}
+
+	}
+
+	// boulder is falling
+	if (isStable() == false && isFalling() == true && hasCollided() == false) {
+
+		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+		{
+			moveTo(getX(), getY() - 1);
+		}
+
+		//Change collision if neccessary
+		if (getWorld()->iceField[getX()][getY() - 1] != nullptr || getY() == 1)
+		{
+			setCollided(true);
+		}
+	}
+	//Collision check
+	if (hasCollided() == true)
+	{
+		setActive(false);
+	}
+}
+bool Boulder::isStable() {
+	return stable_;
+}
+void Boulder::setStable(bool b) {
+	stable_ = b;
+}
+bool Boulder::isWaitingToFall() {
+	return waitingToFall_;
+}
+void Boulder::setWaitingToFall(bool b) {
+	waitingToFall_ = b;
+}
+bool Boulder::isFalling() {
+	return falling_;
+}
+void Boulder::setFalling(bool b) {
+	falling_ = b;
+}
+bool Boulder::hasCollided() {
+	return collided_;
+}
+void Boulder::setCollided(bool b) {
+	collided_ = b;
+}
+/*
+	CLASS: Item
+	Abstract Base Class for all items that can be picked up.
+	Cannot be instantiated.
+	They will have a state, temporary or permanent.
+	Child Classes: Barrel, Gold, Water
+*/
+bool Item::IcemanCanPickUp() {
+	return IcemanCanPickUp_;
+}
+bool Item::ProtestorCanPickUp() {
+	return ProtestorCanPickUp_;
+}
+
+/*
+	CLASS: Barrel (Oil)
+	Once all Barrels are picked up from Iceman, the level ends.
+*/
+void Barrel::doSomething()
+{
+	//Calculate distance from Iceman
+	int ix = getWorld()->IcemanPtr_->getX();
+	int iy = getWorld()->IcemanPtr_->getY();
+	int bx = getX();
+	int by = getY();
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
+	double radius = sqrt(x * x + y * y);
+	if (isVisible() == false && radius <= 4)
+	{
+		setVisible(true);
+		return;
+	}
+	//Player picks up Oil and reduces barrelsRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->IcemanPtr_->getX() == getX() + i)
+			{
+				if (getWorld()->IcemanPtr_->getY() == getY() + j)
+				{
+					getWorld()->increaseScore(1000);
+					getWorld()->playSound(SOUND_FOUND_OIL);
+					getWorld()->decBarrels();
+					setActive(false);
+				}
+			}
+		}
+	}
+
+}
+
+/*
+	CLASS: Gold
+*/
+void Gold::doSomething()
+{
+	//Player picks up gold and reduces goldRemaining_
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (getWorld()->IcemanPtr_->getX() == getX() + i)
+			{
+				if (getWorld()->IcemanPtr_->getY() == getY() + j)
+				{
+					getWorld()->increaseScore(10);
+					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
+					getWorld()->IcemanPtr_->incGold();
+					setActive(false);
+				}
+			}
+		}
+	}
+}
+bool Gold::isTemp() {
+	return tempState_;
+}
+int Gold::getTempCount() {
+	return tempCount_;
+}
 
 /*
 	CLASS: Character
 	Abstract Base Class for all objects that can be annoyed()
-		(IceMan and both Protestors)
+	Cannot be instantiated.
+	Child Classes: Iceman, Protestor
 */
-void Character::annoyed() {}	// doesn't do anything
+// dummy function, not implemented
 bool Character::collisionCheck(int id)
 {
 	if (id == 0)
@@ -33,12 +200,6 @@ bool Character::collisionCheck(int id)
 	if (id == 1)
 		return true;
 }
-
-/*
-	CLASS: Player
-	Abstract Base Class for all objects that can be annoyed()
-		(IceMan and both Protestors)
-*/
 int Character::getHealth() {
 	return health_;
 }
@@ -51,9 +212,7 @@ bool Character::hasDied() {
 	else
 		return false;
 }
-
-void Character::incGold()
-{
+void Character::incGold() {
 	numOfGold_++;
 }
 
@@ -178,156 +337,4 @@ int Iceman::getNumOfSonars() {
 }
 void Iceman::increaseNumOfOil() {
 	numOfOil_++;
-}
-
-/*
-	CLASS: Boulder
-*/
-void Boulder::doSomething()
-{
-	// boulder is in the ice
-	if (isStable() == true && isFalling() == false && hasCollided() == false) {
-
-		// checks for ice below if boulder is not waiting to fall
-		if (isWaitingToFall() == false) {
-			int count = 0;
-			for (int h = 0; h < 4; h++)
-			{
-				for (int g = 0; g < 4; g++)
-				{
-					if (getY() > 4) {
-						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
-							count++;
-					}
-				}
-			}
-			// boulder is now waiting to fall
-			if (count == 16)
-				setWaitingToFall(true);
-		}
-		else {	// gives boulder a pause before falling
-			fallWaitCount_--;
-			if (fallWaitCount_ <= 0)
-			{
-				setStable(false);
-				setFalling(true);
-				// play sound for boulder falling
-				getWorld()->playSound(SOUND_FALLING_ROCK);
-			}
-		}
-
-	}
-
-	// boulder is falling
-	if (isStable() == false && isFalling() == true && hasCollided() == false){
-		
-		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
-		{
-			moveTo(getX(), getY() - 1);
-		}
-
-		//Change collision if neccessary
-		if (getWorld()->iceField[getX()][getY() - 1] != nullptr || getY() == 1)
-		{
-			setCollided(true);
-		}
-	}
-	//Collision check
-	if (hasCollided() == true)
-	{
-		setActive(false);
-	}
-}
-bool Boulder::isStable() {
-	return stable_;
-}
-void Boulder::setStable(bool b) {
-	stable_ = b;
-}
-bool Boulder::isWaitingToFall() {
-	return waitingToFall_;
-}
-void Boulder::setWaitingToFall(bool b) {
-	waitingToFall_ = b;
-}
-bool Boulder::isFalling() {
-	return falling_;
-}
-void Boulder::setFalling(bool b) {
-	falling_ = b;
-}
-bool Boulder::hasCollided() {
-	return collided_;
-}
-void Boulder::setCollided(bool b) {
-	collided_ = b;
-}
-
-/*
-	CLASS: Barrel
-*/
-void Barrel::doSomething()
-{
-	//Calculate distance from Iceman
-	int ix = getWorld()->IcemanPtr_->getX();
-	int iy = getWorld()->IcemanPtr_->getY();
-	int bx = getX();
-	int by = getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
-	double radius = sqrt(x * x + y * y);
-	if (isVisible() == false && radius <= 4)
-	{
-		setVisible(true);
-		return;
-	}
-	//Player picks up Oil and reduces barrelsRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(1000);
-					getWorld()->playSound(SOUND_FOUND_OIL);
-					getWorld()->decBarrels();
-					setActive(false);
-				}
-			}
-		}
-	}
-	
-}
-
-void Gold::doSomething()
-{
-	//Player picks up gold and reduces goldRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(10);
-					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
-					getWorld()->IcemanPtr_->incGold();
-					setActive(false);
-				}
-			}
-		}
-	}
-}
-
-bool Gold::isTemp()
-{
-	return tempState_;
-}
-
-int Gold::getTempCount()
-{
-	return tempCount_;
 }
