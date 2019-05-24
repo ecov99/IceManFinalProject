@@ -48,19 +48,19 @@ public:
 
 	void genNumOfItems();
 	void populateBoulder(int num);
-	void populateGold(int num);
-	void populateBarrel(int num);
+	//void populateGold(int num);
+	//void populateBarrel(int num);
 
 	void removeDeadGameObject();
-	bool checkForBoulders();
+	//bool checkForBoulders();
 
 	double calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder> &B);
 
 	/*
 	Personal Data (variables, structures, etc.)
 	*/
-	vector<vector<shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
-	vector<unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
+	Ice* iceField_[64][64];							// Creates a 2D array of Ice pointers
+	vector<unique_ptr<Actor>> currentActorVector;	// Vector that stores Actors currently alive
 	vector<unique_ptr<Boulder>> currentBoulders;
 	int goldRemaining_;
 	int barrelsRemaining_;

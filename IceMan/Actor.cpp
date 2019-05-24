@@ -29,62 +29,63 @@ void Actor::setLocation(int x, int y) {
 	CLASS: Boulder
 	Starts off stable. Falls once ice below is mined by Iceman.
 */
-void Boulder::doSomething()
-{
-	// boulder is in the ice
-	if (isStable() == true && isFalling() == false && hasCollided() == false) {
-
-		// checks for ice below if boulder is not waiting to fall
-		if (isWaitingToFall() == false) {
-			int count = 0;
-			for (int h = 0; h < 4; h++)
-			{
-				for (int g = 0; g < 4; g++)
-				{
-					if (getY() > 4) {
-						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
-							count++;
-					}
-				}
-			}
-			// boulder is now waiting to fall
-			if (count == 16)
-				setWaitingToFall(true);
-		}
-		else {	// gives boulder a pause before falling
-			fallWaitCount_--;
-			if (fallWaitCount_ <= 0)
-			{
-				setStable(false);
-				setFalling(true);
-				// play sound for boulder falling
-				getWorld()->playSound(SOUND_FALLING_ROCK);
-			}
-		}
-
-	}
-
-	// boulder is falling
-	if (isStable() == false && isFalling() == true && hasCollided() == false) {
-
-		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
-		{
-			moveTo(getX(), getY() - 1);
-			setLocation(getX(), getY() - 1);
-		}
-
-		//Change collision if neccessary
-		if (getWorld()->iceField[getX()][getY() - 1] != nullptr || getY() == 1)
-		{
-			setCollided(true);
-		}
-	}
-	//Collision check
-	if (hasCollided() == true)
-	{
-		setActive(false);
-	}
-}
+void Boulder::doSomething() {}
+//void Boulder::doSomething()
+//{
+//	// boulder is in the ice
+//	if (isStable() == true && isFalling() == false && hasCollided() == false) {
+//
+//		// checks for ice below if boulder is not waiting to fall
+//		if (isWaitingToFall() == false) {
+//			int count = 0;
+//			for (int h = 0; h < 4; h++)
+//			{
+//				for (int g = 0; g < 4; g++)
+//				{
+//					if (getY() > 4) {
+//						if (getWorld()->iceField[getX() + g][getY() - 1 - h] == nullptr)
+//							count++;
+//					}
+//				}
+//			}
+//			// boulder is now waiting to fall
+//			if (count == 16)
+//				setWaitingToFall(true);
+//		}
+//		else {	// gives boulder a pause before falling
+//			fallWaitCount_--;
+//			if (fallWaitCount_ <= 0)
+//			{
+//				setStable(false);
+//				setFalling(true);
+//				// play sound for boulder falling
+//				getWorld()->playSound(SOUND_FALLING_ROCK);
+//			}
+//		}
+//
+//	}
+//
+//	// boulder is falling
+//	if (isStable() == false && isFalling() == true && hasCollided() == false) {
+//
+//		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
+//		{
+//			moveTo(getX(), getY() - 1);
+//			setLocation(getX(), getY() - 1);
+//		}
+//
+//		//Change collision if neccessary
+//		if (getWorld()->iceField[getX()][getY() - 1] != nullptr || getY() == 1)
+//		{
+//			setCollided(true);
+//		}
+//	}
+//	//Collision check
+//	if (hasCollided() == true)
+//	{
+//		setActive(false);
+//	}
+//}
 bool Boulder::isStable() {
 	return stable_;
 }
@@ -259,119 +260,120 @@ bool Character::checkForBoulders(int k) {
 	CLASS: Iceman
 	User controlled player.
 */
-void Iceman::doSomething()
-{
-	// Detecting if player is overlaying a visible Ice object
-	bool isCovered = false;
-	for (int h = 0; h < 4; h++)
-	{
-		for (int g = 0; g < 4; g++)
-		{
-			if (getWorld()->iceField[getX() + g][getY() + h] != nullptr)
-			{
-				isCovered = true;
-			}
-		}
-	}
-	if (isCovered)
-	{
-		
-		getWorld()->playSound(SOUND_DIG);
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				getWorld()->iceField[getX() + j][getY() + i].reset();
-				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
-			}
-		}
-	}
-	// player input 
-	int k;
-	if (getWorld()->getKey(k) == true)
-	{
-		//User hit a key this tick
-		switch (k)
-		{
-		case KEY_PRESS_LEFT:
-			// change direction
-			if (getDirection() != left)	
-			{
-				setDirection(left);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getX() > 0 && checkForBoulders(k))
-				{
-					moveTo(getX() - 1, getY());
-					setLocation(getX() - 1, getY());
-				}
-			}
-			break;
-
-		case KEY_PRESS_RIGHT:
-			// change direction
-			if (getDirection() != right)
-			{
-				setDirection(right);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getX() < 60 && checkForBoulders(k))
-				{
-					moveTo(getX() + 1, getY());
-					setLocation(getX() + 1, getY());
-				}
-			}
-			break;
-
-		case KEY_PRESS_DOWN:
-			// change direction
-			if (getDirection() != down)
-			{
-				setDirection(down);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getY() > 0 && checkForBoulders(k))
-				{
-					moveTo(getX(), getY() - 1);
-					setLocation(getX(), getY() - 1);
-				}
-			}
-			break;
-
-		case KEY_PRESS_UP:
-			// change direction
-			if (getDirection() != up)
-			{
-				setDirection(up);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getY() < 60 && checkForBoulders(k))
-				{
-					moveTo(getX(), getY() + 1);
-					setLocation(getX(), getY() + 1);
-				}
-			}
-			break;
-
-		case KEY_PRESS_ESCAPE:
-			// stop program
-			exit(0);
-			break;
-		}
-	}
-}
+void Iceman::doSomething() {}
+//void Iceman::doSomething()
+//{
+//	// Detecting if player is overlaying a visible Ice object
+//	bool isCovered = false;
+//	for (int h = 0; h < 4; h++)
+//	{
+//		for (int g = 0; g < 4; g++)
+//		{
+//			if (getWorld()->iceField[getX() + g][getY() + h] != nullptr)
+//			{
+//				isCovered = true;
+//			}
+//		}
+//	}
+//	if (isCovered)
+//	{
+//		
+//		getWorld()->playSound(SOUND_DIG);
+//		for (int i = 0; i < 4; i++)
+//		{
+//			for (int j = 0; j < 4; j++)
+//			{
+//				getWorld()->iceField[getX() + j][getY() + i].reset();
+//				getWorld()->iceField[getX() + j][getY() + i] = nullptr;
+//			}
+//		}
+//	}
+//	// player input 
+//	int k;
+//	if (getWorld()->getKey(k) == true)
+//	{
+//		//User hit a key this tick
+//		switch (k)
+//		{
+//		case KEY_PRESS_LEFT:
+//			// change direction
+//			if (getDirection() != left)	
+//			{
+//				setDirection(left);
+//			}
+//			// move
+//			else
+//			{
+//				// if space is in bounds and no boulder
+//				if (getX() > 0 && checkForBoulders(k))
+//				{
+//					moveTo(getX() - 1, getY());
+//					setLocation(getX() - 1, getY());
+//				}
+//			}
+//			break;
+//
+//		case KEY_PRESS_RIGHT:
+//			// change direction
+//			if (getDirection() != right)
+//			{
+//				setDirection(right);
+//			}
+//			// move
+//			else
+//			{
+//				// if space is in bounds and no boulder
+//				if (getX() < 60 && checkForBoulders(k))
+//				{
+//					moveTo(getX() + 1, getY());
+//					setLocation(getX() + 1, getY());
+//				}
+//			}
+//			break;
+//
+//		case KEY_PRESS_DOWN:
+//			// change direction
+//			if (getDirection() != down)
+//			{
+//				setDirection(down);
+//			}
+//			// move
+//			else
+//			{
+//				// if space is in bounds and no boulder
+//				if (getY() > 0 && checkForBoulders(k))
+//				{
+//					moveTo(getX(), getY() - 1);
+//					setLocation(getX(), getY() - 1);
+//				}
+//			}
+//			break;
+//
+//		case KEY_PRESS_UP:
+//			// change direction
+//			if (getDirection() != up)
+//			{
+//				setDirection(up);
+//			}
+//			// move
+//			else
+//			{
+//				// if space is in bounds and no boulder
+//				if (getY() < 60 && checkForBoulders(k))
+//				{
+//					moveTo(getX(), getY() + 1);
+//					setLocation(getX(), getY() + 1);
+//				}
+//			}
+//			break;
+//
+//		case KEY_PRESS_ESCAPE:
+//			// stop program
+//			exit(0);
+//			break;
+//		}
+//	}
+//}
 int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;
 }

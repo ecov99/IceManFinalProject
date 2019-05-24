@@ -30,31 +30,67 @@ int StudentWorld::init()
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
-	iceField.resize(64, vector<shared_ptr<Ice>>(64));
-	for (int i = 0; i < 60; i++)		// rows
-	{
-		for (int j = 0; j < 30; j++)	// left side
-		{
-			iceField[j][i] = make_shared<Ice>(this, j, i);
-		}
-		for (int p = 31; p < 34; p++)	// middle of field
-		{
-			iceField[p][i] = nullptr;
-		}
-		for (int k = 34; k < 64; k++)	// right side
-		{
-			iceField[k][i] = make_shared<Ice>(this, k, i);
-		}
-		for (int l = 0; l < 3; l++)		// bottom of shaft
-		{
-			iceField[i][l] = make_shared<Ice>(this, i, l);
+
+	// BOTTOM of field
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 4; j++) {
+			iceField_[i][j] = new Ice(this, i, j);
 		}
 	}
 
+	// LEFT side of field
+	for (int k = 0; k < 30; k++) {
+		for (int l = 4; l < 60; l++) {
+			iceField_[k][l] = new Ice(this, k, l);
+		}
+	}
+
+	// MIDDLE of field
+	for (int m = 30; m < 34; m++) {
+		for (int n = 4; n < 60; n++) {
+			iceField_[m][n] = nullptr;
+		}
+	}
+
+	// RIGHT side of field
+	for (int o = 34; o < 64; o++) {
+		for (int p = 4; p < 60; p++) {
+			iceField_[o][p] = new Ice(this, o, p);
+		}
+	}
+
+	// TOP of field
+	for (int q = 0; q < 64; q++) {
+		for (int r = 60; r < 64; r++) {
+			iceField_[q][r] = nullptr;
+		}
+	}
+
+	//iceField.resize(64, vector<shared_ptr<Ice>>(64));
+	//for (int i = 0; i < 60; i++)		// rows
+	//{
+	//	for (int j = 0; j < 30; j++)	// left side
+	//	{
+	//		iceField[j][i] = make_shared<Ice>(this, j, i);
+	//	}
+	//	for (int p = 31; p < 34; p++)	// middle of field
+	//	{
+	//		iceField[p][i] = nullptr;
+	//	}
+	//	for (int k = 34; k < 64; k++)	// right side
+	//	{
+	//		iceField[k][i] = make_shared<Ice>(this, k, i);
+	//	}
+	//	for (int l = 0; l < 3; l++)		// bottom of shaft
+	//	{
+	//		iceField[i][l] = make_shared<Ice>(this, i, l);
+	//	}
+	//}
+
 	genNumOfItems();
 	populateBoulder(bouldersRemaining_);
-	populateGold(goldRemaining_);
-	populateBarrel(barrelsRemaining_);
+	//populateGold(goldRemaining_);
+	//populateBarrel(barrelsRemaining_);
 
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -130,14 +166,20 @@ void StudentWorld::cleanUp()
 	currentBoulders.clear();
 
 	// Step 4) clear iceField; free smart ptrs AND vectors
-	for (int i = 0; i < 64; i++) {		// rows
-		for (int j = 0; j < 64; j++) {	// cols
-			// cout << "J: " << j << " I: " << i << endl;
-			iceField[i][j].reset();
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 64; j++) {
+			delete iceField_[i][j];
+			iceField_[i][j] = nullptr;
 		}
-		iceField[i].clear();
 	}
-	iceField.clear();
+	//for (int i = 0; i < 64; i++) {		// rows
+	//	for (int j = 0; j < 64; j++) {	// cols
+	//		// cout << "J: " << j << " I: " << i << endl;
+	//		iceField[i][j].reset();
+	//	}
+	//	iceField[i].clear();
+	//}
+	//iceField.clear();
 }
 
 
@@ -204,111 +246,106 @@ void StudentWorld::genNumOfItems()
 
 void StudentWorld::populateBoulder(int num)
 {
-	for (int i = 0; i < num; i++)
+	for (int h = 0; h < num; h++)
 	{
 		int x = genRandNumber();
 		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)	// looks for 4x4 space that boulder image will appear
-		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField[x + g][y + h] != nullptr)
-				{
+		bool isCovered;
+
+		// looks for 4x4 space that boulder image will appear
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (iceField_[x + i][j + i] != nullptr) {
 					isCovered = true;
 				}
-				else
-				{
+				else {
 					isCovered = false;
 					break;
 				}
 			}
-			
 		}
+
+		// location found for boulder, remove ice
 		if (isCovered && noNeighbors(x, y))
 		{
-			for (int h = 0; h < 4; h++)	// removes ice
-			{
-				for (int g = 0; g < 4; g++)
-				{
-					iceField[x + g][y + h].reset();
-					iceField[x + g][y + h] = nullptr;
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					delete iceField_[x + m][y + n];
+					iceField_[x + m][y + n] = nullptr;
 				}
 			}
 			currentBoulders.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
 		}
-		else
-		{
-			i--; //used to reset counter to retry genRandNumber
-		}
+		else	// reset counter and find new random numbers
+			h--;
 	}
 }
 
-void StudentWorld::populateGold(int num)
-{
-	for (int i = 0; i < num; i++)
-	{
-		int x = genRandNumber();
-		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)
-		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField[x + g][y + h] != nullptr)
-				{
-					isCovered = true;
-				}
-				else
-				{
-					isCovered = false;
-					break;
-				}
-			}
-		}
-		if (isCovered && noNeighbors(x, y))
-		{
-			currentActorVector.push_back(make_unique<Gold>(this, x, y, true));
-		}
-		else
-		{
-			i--; //used to reset counter to retry genRandNumber
-		}
-	}
-}
-
-void StudentWorld::populateBarrel(int num)
-{
-	for (int i = 0; i < num; i++)
-	{
-		int x = genRandNumber();
-		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)
-		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField[x + g][y + h] != nullptr)
-				{
-					isCovered = true;
-				}
-				else
-				{
-					isCovered = false;
-					break;
-				}
-			}
-		}
-		if (isCovered && noNeighbors(x, y))
-		{
-			currentActorVector.push_back(make_unique<Barrel>(this, x, y));
-		}
-		else
-		{
-			i--; // used to reset counter to retry genRandNumber
-		}
-	}
-}
+//void StudentWorld::populateGold(int num)
+//{
+//	for (int i = 0; i < num; i++)
+//	{
+//		int x = genRandNumber();
+//		int y = genRandNumber();
+//		bool isCovered = false;
+//		for (int h = 0; h < 4; h++)
+//		{
+//			for (int g = 0; g < 4; g++)
+//			{
+//				if (iceField[x + g][y + h] != nullptr)
+//				{
+//					isCovered = true;
+//				}
+//				else
+//				{
+//					isCovered = false;
+//					break;
+//				}
+//			}
+//		}
+//		if (isCovered && noNeighbors(x, y))
+//		{
+//			currentActorVector.push_back(make_unique<Gold>(this, x, y, true));
+//		}
+//		else
+//		{
+//			i--; //used to reset counter to retry genRandNumber
+//		}
+//	}
+//}
+//
+//void StudentWorld::populateBarrel(int num)
+//{
+//	for (int i = 0; i < num; i++)
+//	{
+//		int x = genRandNumber();
+//		int y = genRandNumber();
+//		bool isCovered = false;
+//		for (int h = 0; h < 4; h++)
+//		{
+//			for (int g = 0; g < 4; g++)
+//			{
+//				if (iceField[x + g][y + h] != nullptr)
+//				{
+//					isCovered = true;
+//				}
+//				else
+//				{
+//					isCovered = false;
+//					break;
+//				}
+//			}
+//		}
+//		if (isCovered && noNeighbors(x, y))
+//		{
+//			currentActorVector.push_back(make_unique<Barrel>(this, x, y));
+//		}
+//		else
+//		{
+//			i--; // used to reset counter to retry genRandNumber
+//		}
+//	}
+//}
 
 void StudentWorld::removeDeadGameObject()
 {
@@ -331,16 +368,6 @@ void StudentWorld::removeDeadGameObject()
 			i--;
 		}
 	}
-}
-
-bool StudentWorld::checkForBoulders() {
-	// loop through all boulders
-	for (int i = 0; i < currentBoulders.size(); i++) {
-
-		// calculate distance
-		// calcDistance(IcemanPtr_, currentBoulders[i]);
-	}
-	return false;
 }
 
 double StudentWorld::calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder>& B)
