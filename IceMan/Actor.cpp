@@ -227,29 +227,32 @@ bool Character::checkForBoulders(int k) {
 	// loop through boulders vector
 	for (int i = 0; i < getWorld()->currentBoulders.size(); i++) {
 
-		// check distance character is from each boulder
+		// check distance Iceman is from each boulder
 		temp = getWorld()->calcDistanceToBoulder(getWorld()->IcemanPtr_, getWorld()->currentBoulders[i]);
+
+		// if boulder is within radius of 3.5
 		if (temp <= 3.5) {
-			// check for going up
+			// check for going up, if boulder is down
 			if (k == KEY_PRESS_UP && getWorld()->currentBoulders[i]->getY() < getWorld()->IcemanPtr_->getY())
-				return true;
+				return true;	// it's okay
 
-			// check for going down
+			// check for going down, if boulder is up
 			if (k == KEY_PRESS_DOWN && getWorld()->currentBoulders[i]->getY() > getWorld()->IcemanPtr_->getY())
-				return true;
+				return true;	// it's okay
 
-			// check for going left
+			// check for going left, if boulder is to the right
 			if (k == KEY_PRESS_LEFT && getWorld()->currentBoulders[i]->getX() > getWorld()->IcemanPtr_->getX())
-				return true;
+				return true;	// it's okay
 
-			// check for going right
+			// check for going right, if boulder is to the left
 			if (k == KEY_PRESS_RIGHT && getWorld()->currentBoulders[i]->getX() < getWorld()->IcemanPtr_->getX())
-				return true;
+				return true;	// it's okay
 
-			return false;
+			// otherwise, boulder is in direction of movement
+			return false;		// not okay
 		}
 	}
-	return true;
+	return true;	// Iceman is not near boulder
 }
 
 /*
