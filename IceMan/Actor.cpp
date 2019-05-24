@@ -20,6 +20,53 @@ void Actor::setActive(bool b) {
 StudentWorld* Actor::getWorld() {
 	return sw_;
 }
+
+double Actor::calcDistance(unique_ptr<Actor> other)
+{
+	int ix = this->getX();
+	int iy = this->getY();
+	int bx = other->getX();
+	int by = other->getY();
+	int x = abs(ix - bx);
+	int y = abs(iy - by);
+
+	double radius = sqrt(x * x + y * y);
+	return radius;
+}
+//void Actor::updateBoundingBox()
+//{
+//	for (int i = 0; i < 4; i++)
+//	{
+//		for (int j = 0; j < 4; j++)
+//		{
+//			boundingBox_[i][j].xLoc = getX() + i;
+//			boundingBox_[i][j].yLoc = getY() + j;
+//		}
+//	}
+//}
+//bool Actor::collisionCheck(Actor & other)
+//{
+//	//this bounding corners
+//	location_ selfBotRight = boundingBox_[4][0];
+//	location_ selfBotLeft = boundingBox_[0][0];
+//	location_ selfTopRight = boundingBox_[4][4];
+//	location_ selfTopLeft = boundingBox_[0][4];
+//	//other bounding corners
+//	location_ otherBotRight = other.boundingBox_[4][0];
+//	location_ otherBottomLeft = other.boundingBox_[0][0];
+//	location_ otherTopRight = other.boundingBox_[4][4];
+//	location_ otherTopLeft = other.boundingBox_[0][4];
+//
+//	//comparing other's Top side
+//	
+//	//Comparing other's Bottom Side
+//
+//	//Comparing other's Left Side
+//	 
+//	//Comparing other's Right Side
+//
+//	return false;
+//}
 /*
 	CLASS: Boulder
 	Starts off stable. Falls once ice below is mined by Iceman.
@@ -162,10 +209,14 @@ void Barrel::doSomething()
 void Gold::doSomething()
 {
 	//Player picks up gold and reduces goldRemaining_
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 8; i++)
 	{
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < 8; j++)
 		{
+			double temp = calcDistance();
+			
+
+
 			if (getWorld()->IcemanPtr_->getX() == getX() + i)
 			{
 				if (getWorld()->IcemanPtr_->getY() == getY() + j)

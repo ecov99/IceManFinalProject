@@ -159,18 +159,7 @@ double StudentWorld::calcDistance(int x, int y)
 	return radius;
 }
  
-double StudentWorld::calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2)
-{
-	int ix = act1->getX();
-	int iy = act1->getY();
-	int bx = act2->getX();
-	int by = act2->getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
 
-	double radius = sqrt(x * x + y * y);
-	return radius;
-}
 
 bool StudentWorld::noNeighbors(int x, int y)
 {

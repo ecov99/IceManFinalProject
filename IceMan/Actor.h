@@ -35,12 +35,21 @@ public:
 	bool isActive();
 	void setActive(bool b);
 	StudentWorld* getWorld();
+	double calcDistance(unique_ptr<Actor> other);
+	//void updateBoundingBox();
+	//bool collisionCheck(Actor &other);
 
 
 private:
 	// attributes
 	bool active_;
 	StudentWorld* sw_;
+//	struct location_{
+//		int xLoc;
+//		int yLoc;
+//	};
+//public:
+//	location_ boundingBox_[4][4];
 
 };
 

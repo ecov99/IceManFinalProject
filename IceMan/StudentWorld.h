@@ -45,7 +45,7 @@ public:
 	int genRandNumber();
 	void setDisplayText();
 	double calcDistance(int x, int y);
-	double calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2);
+	
 	bool noNeighbors(int x,  int y);
 
 	void genNumOfItems();
