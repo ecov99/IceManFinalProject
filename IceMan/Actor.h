@@ -259,4 +259,43 @@ private:
 	StudentWorld* sw_;
 };
 
+class Protestor : public Character {
+public:
+	// ctors & dtors
+	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 60, 60, left, 1, 0, health)
+	{
+		setVisible(true);
+		leaveOilFieldState_ = false;
+		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
+		level_ = level;
+		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
+	}
+
+	//behaviors
+	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
+	virtual void doSomething() {}
+	// attributes
+	bool leaveOilFieldState_;
+	int numSquaresToMoveInCurrentDirection_;
+	int ticksToWaitBetweenMoves_;
+	int level_;
+
+};
+
+class RegularProtestor : public Protestor {
+public:
+	RegularProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_PROTESTER, 5, level) {}
+
+	//behaviors
+	virtual void doSomething();
+
+};
+
+class HardcoreProtestor : public Protestor {
+public:
+	HardcoreProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_HARD_CORE_PROTESTER, 20, level) {}
+
+	//behaviors
+	virtual void doSomething();
+};
 #endif // ACTOR_H_
