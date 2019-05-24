@@ -43,6 +43,7 @@ public:
 	void decGold();
 
 	int genRandNumber();
+	int genRandNumber(int min, int max);
 	void setDisplayText();
 	bool noNeighbors(int x,  int y);
 
@@ -67,6 +68,7 @@ public:
 	int bouldersRemaining_;
 	
 	Iceman* IcemanPtr_; // points to IcemanPtr_
+	RegularProtestor* test_;
 };
 
 #endif // STUDENTWORLD_H_

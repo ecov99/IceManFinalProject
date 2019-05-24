@@ -25,6 +25,11 @@ void Actor::setLocation(int x, int y) {
 	Location_.yCoordinate = y;
 }
 
+Coordinate Actor::getLocation()
+{
+	return Location_;
+}
+
 /*
 	CLASS: Boulder
 	Starts off stable. Falls once ice below is mined by Iceman.
@@ -380,4 +385,82 @@ int Iceman::getNumOfSonars() {
 }
 void Iceman::increaseNumOfOil() {
 	numOfOil_++;
+}
+
+int Protestor::updateMobilityCount()
+{
+	//calculate number of movements from 8 <= x <= 60
+	return getWorld()->genRandNumber(8, 60);
+}
+
+void RegularProtestor::doSomething()
+{
+	if (isActive() == false) //Checks if alive
+		return;
+	if (ticksToWaitBetweenMoves_ > 0) //Protestor can not move
+		ticksToWaitBetweenMoves_--;
+	else if(ticksToWaitBetweenMoves_ == 0) //Protestor can move
+	{
+		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
+		{
+			if (getLocation().xCoordinate == 60 && getLocation().yCoordinate == 60)//If Protestor reaches exit
+			{
+				setActive(false);
+			}
+			//Cannot be quirted or bonked
+
+			//Play sound SOUND_PROTESTOR_GIVE_UP
+			//resting tick set to zero so it never rests
+
+			//If bonked by boulder increaseScore(500)
+			//If annoyed by squirted increaseScore(100)
+
+			//Find shortest path to exit
+
+			//Moves towards exit
+
+			//returns
+		}
+		
+		//If Protestor is not trying to leave the oilField
+
+		//If protester is within radius of 4 and facing Iceman 
+		
+		//and has not shouted within the last 15 nonresting tick
+		//Shout at Iceman
+		//Annoy Iceman by deducting 2 health points
+		//Reset shouting variable
+
+		//else if protestor is within vertical or horizontal line of sight of Iceman
+		//and is more than 4 radius away
+		//Change direction facing Iceman and move one step towards Iceman
+		//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
+		//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
+		//then return
+
+
+		//If the Protestor can not see Iceman then
+		//numSquaresToMoveInCurrentDirection--;
+		//if numSquaresToMoveInCurrentDirection <=0 then
+		//Protestor will pick a random direction
+		//If Protestor can move in that direction, move numSquaresToMoveInCurrentDirection
+		//else choose new direction
+
+
+		//If Protestor is sitting at an intersection and 
+		//made a perpendicular turn in 200 non-resting ticks
+		//then pick viable route is multiple viable routes exist pick one direction randomly
+		//new numSquaresToMoveInCurrentDirection values
+
+
+
+
+
+		//At the end of each movement reset ticksToWaitBetweenMoves
+		ticksToWaitBetweenMoves_ = updateMobilityCount();
+	}
+}
+
+void HardcoreProtestor::doSomething()
+{
 }

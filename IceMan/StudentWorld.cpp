@@ -26,7 +26,7 @@ int StudentWorld::init()
 	//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
 	// Player WILL ALWAYS BE IcemanPtr_
 	IcemanPtr_ = new Iceman(this);
-	
+	test_ = new RegularProtestor(this, getLevel());
 
 	//Step 2) Construct new oil field that meets new level requirements 
 	//		  ie: filled with Ice, Barrels, Boulders, GoldNuggets, etc
@@ -70,7 +70,7 @@ int StudentWorld::move()
 
 	// Step 2) give each Actor a chance to do something
 	IcemanPtr_->doSomething();
-
+	test_->doSomething();
 	if (IcemanPtr_->isActive() == false)	// if iceman/player died
 	{
 		decLives();
@@ -358,6 +358,15 @@ int StudentWorld::genRandNumber()
 	int num;
 	const int MIN_VALUE = 1;
 	const int MAX_VALUE = 59;
+	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
+	return num;
+}
+
+int StudentWorld::genRandNumber(int min, int max)
+{
+	int num;
+	const int MIN_VALUE = min;
+	const int MAX_VALUE = max;
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
 	return num;
 }
