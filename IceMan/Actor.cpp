@@ -216,43 +216,6 @@ bool Character::hasDied() {
 void Character::incGold() {
 	numOfGold_++;
 }
-bool Character::checkForBoulders(int k) {
-	double temp;
-
-	// loop through current actors vector
-	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
-
-		// check only boulders
-		if (getWorld()->currentActors[i]->getID() == IID_BOULDER) {
-
-			// check distance Iceman is from each boulder
-			temp = calcDistance(*getWorld()->currentActors[i]);
-
-			// if boulder is within radius of 3.5
-			if (temp <= 3.5) {
-				// check for going up, if boulder is down
-				if (k == KEY_PRESS_UP && getWorld()->currentActors[i]->getY() < getWorld()->IcemanPtr_->getY())
-					return true;	// it's okay
-
-				// check for going down, if boulder is up
-				if (k == KEY_PRESS_DOWN && getWorld()->currentActors[i]->getY() > getWorld()->IcemanPtr_->getY())
-					return true;	// it's okay
-
-				// check for going left, if boulder is to the right
-				if (k == KEY_PRESS_LEFT && getWorld()->currentActors[i]->getX() > getWorld()->IcemanPtr_->getX())
-					return true;	// it's okay
-
-				// check for going right, if boulder is to the left
-				if (k == KEY_PRESS_RIGHT && getWorld()->currentActors[i]->getX() < getWorld()->IcemanPtr_->getX())
-					return true;	// it's okay
-
-				// otherwise, boulder is in direction of movement
-				return false;		// not okay
-			}
-		}
-	}
-	return true;	// Iceman is not near boulder
-}
 
 /*
 	CLASS: Iceman
@@ -366,6 +329,43 @@ void Iceman::doSomething()
 			break;
 		}
 	}
+}
+bool Iceman::checkForBoulders(int k) {
+	double temp;
+
+	// loop through current actors vector
+	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+
+		// check only boulders
+		if (getWorld()->currentActors[i]->getID() == IID_BOULDER) {
+
+			// check distance Iceman is from each boulder
+			temp = calcDistance(*getWorld()->currentActors[i]);
+
+			// if boulder is within radius of 3.5
+			if (temp <= 3.5) {
+				// check for going up, if boulder is down
+				if (k == KEY_PRESS_UP && getWorld()->currentActors[i]->getY() < getWorld()->IcemanPtr_->getY())
+					return true;	// it's okay
+
+				// check for going down, if boulder is up
+				if (k == KEY_PRESS_DOWN && getWorld()->currentActors[i]->getY() > getWorld()->IcemanPtr_->getY())
+					return true;	// it's okay
+
+				// check for going left, if boulder is to the right
+				if (k == KEY_PRESS_LEFT && getWorld()->currentActors[i]->getX() > getWorld()->IcemanPtr_->getX())
+					return true;	// it's okay
+
+				// check for going right, if boulder is to the left
+				if (k == KEY_PRESS_RIGHT && getWorld()->currentActors[i]->getX() < getWorld()->IcemanPtr_->getX())
+					return true;	// it's okay
+
+				// otherwise, boulder is in direction of movement
+				return false;		// not okay
+			}
+		}
+	}
+	return true;	// Iceman is not near boulder
 }
 int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;

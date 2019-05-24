@@ -221,7 +221,6 @@ public:
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
-	bool checkForBoulders(int k);
 
 private:
 	// attributes
@@ -247,6 +246,7 @@ public:
 
 	// behaviors
 	virtual void doSomething();
+	bool checkForBoulders(int k);
 	int getNumOfSquirts();
 	int getNumOfSonars();
 	void increaseNumOfOil();
