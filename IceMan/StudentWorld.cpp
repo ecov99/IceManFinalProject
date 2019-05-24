@@ -321,6 +321,16 @@ int StudentWorld::genRandNumber()
 	return num;
 }
 
+int StudentWorld::genRandNumber(int min, int max)
+{
+	int num;
+	const int MIN_VALUE = min;
+	const int MAX_VALUE = max;
+	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
+	return num;
+}
+
+
 void StudentWorld::setDisplayText()
 {
 	string temp;

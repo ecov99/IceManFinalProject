@@ -391,11 +391,11 @@ void Iceman::increaseNumOfOil() {
 	numOfOil_++;
 }
 
-//int Protestor::updateMobilityCount()
-//{
-//	//calculate number of movements from 8 <= x <= 60
-//	return getWorld()->genRandNumber(8, 60);
-//}
+int Protestor::updateMobilityCount()
+{
+	//calculate number of movements from 8 <= x <= 60
+	return getWorld()->genRandNumber(8, 60);
+}
 
 void RegularProtestor::doSomething()
 {
