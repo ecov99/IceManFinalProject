@@ -6,6 +6,7 @@
 	Will also declare functions and data members.
 */
 #include "GraphObject.h"
+#include <algorithm>
 using namespace std;
 
 class StudentWorld;
@@ -38,6 +39,7 @@ public:
 	void setActive(bool b);
 	StudentWorld* getWorld();
 	double calcDistance(Actor &other);
+	double calcDistance(int x, int y);
 
 private:
 	// attributes
@@ -266,13 +268,13 @@ public:
 	{
 		setVisible(true);
 		leaveOilFieldState_ = false;
-		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
+		//numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
 		level_ = level;
 		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
 	}
 
 	//behaviors
-	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
+	//int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	virtual void doSomething() {}
 	// attributes
 	bool leaveOilFieldState_;

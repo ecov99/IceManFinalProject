@@ -42,7 +42,7 @@ public:
 	void decGold();
 
 	int genRandNumber();
-	int genRandNumber(int min, int max);
+	//int genRandNumber(int min, int max);
 	void setDisplayText();
 	bool noNeighbors(int x,  int y);
 

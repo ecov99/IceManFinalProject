@@ -29,10 +29,19 @@ double Actor::calcDistance(Actor &other)
 	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
 
-Coordinate Actor::getLocation()
+double Actor::calcDistance(int x, int y)
 {
-	return Location_;
+	double Ax = this->getX();
+	double Ay = this->getY();
+	double Bx = x;
+	double By = y;
+	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
+
+//Coordinate Actor::getLocation()
+//{
+//	return Location_;
+//}
 
 /*
 	CLASS: Boulder
@@ -382,11 +391,11 @@ void Iceman::increaseNumOfOil() {
 	numOfOil_++;
 }
 
-int Protestor::updateMobilityCount()
-{
-	//calculate number of movements from 8 <= x <= 60
-	return getWorld()->genRandNumber(8, 60);
-}
+//int Protestor::updateMobilityCount()
+//{
+//	//calculate number of movements from 8 <= x <= 60
+//	return getWorld()->genRandNumber(8, 60);
+//}
 
 void RegularProtestor::doSomething()
 {
@@ -398,10 +407,10 @@ void RegularProtestor::doSomething()
 	{
 		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
 		{
-			if (getLocation().xCoordinate == 60 && getLocation().yCoordinate == 60)//If Protestor reaches exit
-			{
-				setActive(false);
-			}
+			//if (getLocation().xCoordinate == 60 && getLocation().yCoordinate == 60)//If Protestor reaches exit
+			//{
+			//	setActive(false);
+			//}
 			//Cannot be quirted or bonked
 
 			//Play sound SOUND_PROTESTOR_GIVE_UP
@@ -452,7 +461,7 @@ void RegularProtestor::doSomething()
 
 
 		//At the end of each movement reset ticksToWaitBetweenMoves
-		ticksToWaitBetweenMoves_ = updateMobilityCount();
+		//ticksToWaitBetweenMoves_ = updateMobilityCount();
 	}
 }
 
