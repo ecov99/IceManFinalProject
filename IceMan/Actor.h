@@ -11,6 +11,11 @@ using namespace std;
 
 class StudentWorld;
 
+struct Coordinate {
+	int xCoordinate;
+	int yCoordinate;
+};
+
 /*
 	CLASS: Actor
 	Abstract Base Class for all other classes.
@@ -26,6 +31,8 @@ public:
 	{
 		active_ = true;
 		sw_ = sw;
+		Location_.xCoordinate = startX;
+		Location_.yCoordinate = startY;
 	}
 	virtual ~Actor()
 	{}
@@ -35,12 +42,13 @@ public:
 	bool isActive();
 	void setActive(bool b);
 	StudentWorld* getWorld();
-
+	void setLocation(int x, int y);
 
 private:
 	// attributes
 	bool active_;
 	StudentWorld* sw_;
+	Coordinate Location_;
 
 };
 
@@ -220,6 +228,7 @@ public:
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
+	bool checkForBoulders(int k);
 
 private:
 	// attributes

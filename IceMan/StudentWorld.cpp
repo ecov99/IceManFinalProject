@@ -25,7 +25,7 @@ int StudentWorld::init()
 {
 	//Step 1) Allocate and insert a valid Iceman object into the game world at the proper location
 	// Player WILL ALWAYS BE IcemanPtr_
-	IcemanPtr_ = make_unique<Iceman>(this);
+	IcemanPtr_ = new Iceman(this);
 	
 
 	//Step 2) Construct new oil field that meets new level requirements 
@@ -90,6 +90,15 @@ int StudentWorld::move()
 
 		}
 	}
+	for (int i = 0; i < currentBoulders.size(); i++)
+	{
+		if (currentBoulders[i]->isActive())		// if currentActor is active
+		{
+			currentBoulders[i]->doSomething();	// actor will do something
+
+		}
+	}
+
 	// Step 3) remove newly dead actors after each tick
 	removeDeadGameObject();
 
@@ -103,13 +112,24 @@ int StudentWorld::move()
 */
 void StudentWorld::cleanUp()
 {
-	// Step 1) clear currentActor vector
+	// Step 1) delete Iceman
+	delete IcemanPtr_;
+	
+	// Step 2) clear currentActor vector
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
 		currentActorVector[i].reset();
 	}
 	currentActorVector.clear();
-	// Step 2) clear iceField; free smart ptrs AND vectors
+
+	// Step 3) clear currentBoulders
+	for (int i = 0; i < currentBoulders.size(); i++)
+	{
+		currentBoulders[i].reset();
+	}
+	currentBoulders.clear();
+
+	// Step 4) clear iceField; free smart ptrs AND vectors
 	for (int i = 0; i < 64; i++) {		// rows
 		for (int j = 0; j < 64; j++) {	// cols
 			// cout << "J: " << j << " I: " << i << endl;
@@ -151,25 +171,6 @@ int StudentWorld::getGoldRemaining()
 void StudentWorld::decGold()
 {
 	goldRemaining_--;
-}
-
-double StudentWorld::calcDistance(int x, int y)
-{
-	double radius = sqrt(x * x + y * y);
-	return radius;
-}
- 
-double StudentWorld::calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2)
-{
-	int ix = act1->getX();
-	int iy = act1->getY();
-	int bx = act2->getX();
-	int by = act2->getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
-
-	double radius = sqrt(x * x + y * y);
-	return radius;
 }
 
 bool StudentWorld::noNeighbors(int x, int y)
@@ -234,7 +235,7 @@ void StudentWorld::populateBoulder(int num)
 					iceField[x + g][y + h] = nullptr;
 				}
 			}
-			currentActorVector.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
+			currentBoulders.push_back(make_unique<Boulder>(this, x, y)); // pushes new boulder
 		}
 		else
 		{
@@ -311,6 +312,7 @@ void StudentWorld::populateBarrel(int num)
 
 void StudentWorld::removeDeadGameObject()
 {
+	// clear current Actors
 	for (int i = 0; i < currentActorVector.size(); i++)
 	{
 		if (currentActorVector[i]->isActive() == false)
@@ -319,6 +321,36 @@ void StudentWorld::removeDeadGameObject()
 			i--;
 		}
 	}
+
+	// clear current Boulders
+	for (int i = 0; i < currentBoulders.size(); i++)
+	{
+		if (currentBoulders[i]->isActive() == false)
+		{
+			currentBoulders.erase(currentBoulders.begin() + i);
+			i--;
+		}
+	}
+}
+
+bool StudentWorld::checkForBoulders() {
+	// loop through all boulders
+	for (int i = 0; i < currentBoulders.size(); i++) {
+
+		// calculate distance
+		// calcDistance(IcemanPtr_, currentBoulders[i]);
+	}
+	return false;
+}
+
+double StudentWorld::calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder>& B)
+{
+	double Ax = A->getX();
+	double Ay = A->getY();
+	double Bx = B->getX();
+	double By = B->getY();
+
+	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
 
 int StudentWorld::genRandNumber()

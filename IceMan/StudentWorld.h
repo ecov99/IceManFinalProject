@@ -44,8 +44,6 @@ public:
 
 	int genRandNumber();
 	void setDisplayText();
-	double calcDistance(int x, int y);
-	double calcDistance(unique_ptr<Actor> act1, unique_ptr<Actor> act2);
 	bool noNeighbors(int x,  int y);
 
 	void genNumOfItems();
@@ -54,17 +52,21 @@ public:
 	void populateBarrel(int num);
 
 	void removeDeadGameObject();
+	bool checkForBoulders();
+
+	double calcDistanceToBoulder(Iceman* A, unique_ptr<Boulder> &B);
 
 	/*
 	Personal Data (variables, structures, etc.)
 	*/
 	vector<vector<shared_ptr<Ice>>> iceField; //Creates a 2D vector array of Ice smart pointers
 	vector<unique_ptr<Actor>> currentActorVector; //Vector that stores Actors currently alive
+	vector<unique_ptr<Boulder>> currentBoulders;
 	int goldRemaining_;
 	int barrelsRemaining_;
 	int bouldersRemaining_;
-
-	unique_ptr<Iceman> IcemanPtr_; // points to IcemanPtr_
+	
+	Iceman* IcemanPtr_; // points to IcemanPtr_
 };
 
 #endif // STUDENTWORLD_H_

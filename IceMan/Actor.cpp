@@ -20,6 +20,11 @@ void Actor::setActive(bool b) {
 StudentWorld* Actor::getWorld() {
 	return sw_;
 }
+void Actor::setLocation(int x, int y) {
+	Location_.xCoordinate = x;
+	Location_.yCoordinate = y;
+}
+
 /*
 	CLASS: Boulder
 	Starts off stable. Falls once ice below is mined by Iceman.
@@ -65,6 +70,7 @@ void Boulder::doSomething()
 		if (getWorld()->iceField[getX()][getY() - 1] == nullptr && getY() > 1)
 		{
 			moveTo(getX(), getY() - 1);
+			setLocation(getX(), getY() - 1);
 		}
 
 		//Change collision if neccessary
@@ -215,6 +221,36 @@ bool Character::hasDied() {
 void Character::incGold() {
 	numOfGold_++;
 }
+bool Character::checkForBoulders(int k) {
+	double temp;
+
+	// loop through boulders vector
+	for (int i = 0; i < getWorld()->currentBoulders.size(); i++) {
+
+		// check distance character is from each boulder
+		temp = getWorld()->calcDistanceToBoulder(getWorld()->IcemanPtr_, getWorld()->currentBoulders[i]);
+		if (temp <= 3.5) {
+			// check for going up
+			if (k == KEY_PRESS_UP && getWorld()->currentBoulders[i]->getY() < getWorld()->IcemanPtr_->getY())
+				return true;
+
+			// check for going down
+			if (k == KEY_PRESS_DOWN && getWorld()->currentBoulders[i]->getY() > getWorld()->IcemanPtr_->getY())
+				return true;
+
+			// check for going left
+			if (k == KEY_PRESS_LEFT && getWorld()->currentBoulders[i]->getX() > getWorld()->IcemanPtr_->getX())
+				return true;
+
+			// check for going right
+			if (k == KEY_PRESS_RIGHT && getWorld()->currentBoulders[i]->getX() < getWorld()->IcemanPtr_->getX())
+				return true;
+
+			return false;
+		}
+	}
+	return true;
+}
 
 /*
 	CLASS: Iceman
@@ -248,11 +284,11 @@ void Iceman::doSomething()
 		}
 	}
 	// player input 
-	int  ch;
-	if (getWorld()->getKey(ch) == true)
+	int k;
+	if (getWorld()->getKey(k) == true)
 	{
 		//User hit a key this tick
-		switch (ch)
+		switch (k)
 		{
 		case KEY_PRESS_LEFT:
 			// change direction
@@ -263,10 +299,11 @@ void Iceman::doSomething()
 			// move
 			else
 			{
-				// if space is in bounds
-				if (getX() > 0)
+				// if space is in bounds and no boulder
+				if (getX() > 0 && checkForBoulders(k))
 				{
 					moveTo(getX() - 1, getY());
+					setLocation(getX() - 1, getY());
 				}
 			}
 			break;
@@ -280,10 +317,11 @@ void Iceman::doSomething()
 			// move
 			else
 			{
-				// if space is in bounds
-				if (getX() < 60)
+				// if space is in bounds and no boulder
+				if (getX() < 60 && checkForBoulders(k))
 				{
 					moveTo(getX() + 1, getY());
+					setLocation(getX() + 1, getY());
 				}
 			}
 			break;
@@ -297,10 +335,11 @@ void Iceman::doSomething()
 			// move
 			else
 			{
-				// if space is in bounds
-				if (getY() > 0)
+				// if space is in bounds and no boulder
+				if (getY() > 0 && checkForBoulders(k))
 				{
 					moveTo(getX(), getY() - 1);
+					setLocation(getX(), getY() - 1);
 				}
 			}
 			break;
@@ -314,10 +353,11 @@ void Iceman::doSomething()
 			// move
 			else
 			{
-				// if space is in bounds
-				if (getY() < 60)
+				// if space is in bounds and no boulder
+				if (getY() < 60 && checkForBoulders(k))
 				{
 					moveTo(getX(), getY() + 1);
+					setLocation(getX(), getY() + 1);
 				}
 			}
 			break;
