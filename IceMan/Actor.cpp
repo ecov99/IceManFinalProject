@@ -142,43 +142,6 @@ bool Item::isTemp()
 */
 void Barrel::doSomething()
 {
-	/************************************************************
-		BEFORE
-	*************************************************************/
-	////Calculate distance from Iceman
-	//int ix = getWorld()->IcemanPtr_->getX();
-	//int iy = getWorld()->IcemanPtr_->getY();
-	//int bx = getX();
-	//int by = getY();
-	//int x = abs(ix - bx);
-	//int y = abs(iy - by);
-	//double radius = sqrt(x * x + y * y);
-	//if (isVisible() == false && radius <= 4)
-	//{
-	//	setVisible(true);
-	//	return;
-	//}
-	////Player picks up Oil and reduces barrelsRemaining_
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	for (int j = 0; j < 4; j++)
-	//	{
-	//		if (getWorld()->IcemanPtr_->getX() == getX() + i)
-	//		{
-	//			if (getWorld()->IcemanPtr_->getY() == getY() + j)
-	//			{
-	//				getWorld()->increaseScore(1000);
-	//				getWorld()->playSound(SOUND_FOUND_OIL);
-	//				getWorld()->decBarrels();
-	//				setActive(false);
-	//			}
-	//		}
-	//	}
-	//}
-
-	/************************************************************
-		AFTER
-	*************************************************************/
 	// determine if Iceman is close enough to see barrel
 	if (isVisible() == false && calcDistance(*getWorld()->IcemanPtr_) <= 4) {
 		setVisible(true);
