@@ -341,8 +341,8 @@ void Iceman::doSomething()
 			// dummy implementation
 			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
 				getWorld()->currentActors[i]->GraphObject::setVisible(true);
-				getWorld()->IcemanPtr_->decNumOfSonars();
 			}
+			getWorld()->IcemanPtr_->decNumOfSonars();
 			break;
 
 		case 127:
