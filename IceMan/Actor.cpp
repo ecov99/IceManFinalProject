@@ -75,8 +75,7 @@ void Boulder::doSomething()
 			{
 				setStable(false);
 				setFalling(true);
-				// play sound for boulder falling
-				getWorld()->playSound(SOUND_FALLING_ROCK);
+				getWorld()->playSound(SOUND_FALLING_ROCK);	// play sound for boulder falling
 			}
 		}
 
@@ -133,50 +132,66 @@ void Boulder::setCollided(bool b) {
 	They will have a state, temporary or permanent.
 	Child Classes: Barrel, Gold, Water
 */
-bool Item::IcemanCanPickUp() {
-	return IcemanCanPickUp_;
+bool Item::isTemp()
+{
+	return tempState_;
 }
-bool Item::ProtestorCanPickUp() {
-	return ProtestorCanPickUp_;
-}
-
 /*
 	CLASS: Barrel (Oil)
 	Once all Barrels are picked up from Iceman, the level ends.
 */
 void Barrel::doSomething()
 {
-	//Calculate distance from Iceman
-	int ix = getWorld()->IcemanPtr_->getX();
-	int iy = getWorld()->IcemanPtr_->getY();
-	int bx = getX();
-	int by = getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
-	double radius = sqrt(x * x + y * y);
-	if (isVisible() == false && radius <= 4)
-	{
+	/************************************************************
+		BEFORE
+	*************************************************************/
+	////Calculate distance from Iceman
+	//int ix = getWorld()->IcemanPtr_->getX();
+	//int iy = getWorld()->IcemanPtr_->getY();
+	//int bx = getX();
+	//int by = getY();
+	//int x = abs(ix - bx);
+	//int y = abs(iy - by);
+	//double radius = sqrt(x * x + y * y);
+	//if (isVisible() == false && radius <= 4)
+	//{
+	//	setVisible(true);
+	//	return;
+	//}
+	////Player picks up Oil and reduces barrelsRemaining_
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	for (int j = 0; j < 4; j++)
+	//	{
+	//		if (getWorld()->IcemanPtr_->getX() == getX() + i)
+	//		{
+	//			if (getWorld()->IcemanPtr_->getY() == getY() + j)
+	//			{
+	//				getWorld()->increaseScore(1000);
+	//				getWorld()->playSound(SOUND_FOUND_OIL);
+	//				getWorld()->decBarrels();
+	//				setActive(false);
+	//			}
+	//		}
+	//	}
+	//}
+
+	/************************************************************
+		AFTER
+	*************************************************************/
+	// determine if Iceman is close enough to see barrel
+	if (isVisible() == false && calcDistance(*getWorld()->IcemanPtr_) <= 4) {
 		setVisible(true);
 		return;
 	}
-	//Player picks up Oil and reduces barrelsRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(1000);
-					getWorld()->playSound(SOUND_FOUND_OIL);
-					getWorld()->decBarrels();
-					setActive(false);
-				}
-			}
-		}
-	}
 
+	// determine if Iceman is close enough to pick up barrel
+	if (calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_FOUND_OIL);
+		getWorld()->increaseScore(1000);
+		getWorld()->decBarrels();
+	}
 }
 
 /*
@@ -184,29 +199,26 @@ void Barrel::doSomething()
 */
 void Gold::doSomething()
 {
-	//Player picks up gold and reduces goldRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(10);
-					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
-					getWorld()->IcemanPtr_->incGold();
-					setActive(false);
-				}
-			}
-		}
+	// determine if Gold is in temporary state
+	if (isTemp() == true) {
+		tempCount_--;
+		if (tempCount_ <= 0)
+			setActive(false);
 	}
-}
-bool Gold::isTemp() {
-	return tempState_;
-}
-int Gold::getTempCount() {
-	return tempCount_;
+
+	// determine if Iceman is close enough to see Gold
+	if (isVisible() == false && calcDistance(*getWorld()->IcemanPtr_) <= 4) {
+		setVisible(true);
+		return;
+	}
+
+	// determine if Iceman is close enough to pick up Gold (if not temporary)
+	if (isTemp() == false && calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(10);
+		getWorld()->IcemanPtr_->incGold();
+	}
 }
 
 /*
@@ -229,6 +241,10 @@ bool Character::hasDied() {
 }
 void Character::incGold() {
 	numOfGold_++;
+}
+
+void Character::decGold() {
+	numOfGold_--;
 }
 
 /*
@@ -338,10 +354,35 @@ void Iceman::doSomething()
 			break;
 
 		case KEY_PRESS_ESCAPE:
-			// stop program
+			// decrement lives; end level
+			getWorld()->IcemanPtr_->setActive(false);
+			break;
+		
+		case KEY_PRESS_TAB:
+			// drop gold if available
+			if (getWorld()->IcemanPtr_->getNumOfGold() > 0) {
+				Gold* temp = new Gold(getWorld(), getX(), getY(), true);
+				getWorld()->currentActors.push_back(temp);
+				getWorld()->IcemanPtr_->decGold();
+			}
+			break;
+
+		case 'z':
+		case 'Z':
+			// use sonar if available
+			// dummy implementation
+			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+				getWorld()->currentActors[i]->GraphObject::setVisible(true);
+				getWorld()->IcemanPtr_->decNumOfSonars();
+			}
+			break;
+
+		case 127:
+			// used to stop program
 			exit(0);
 			break;
 		}
+		
 	}
 }
 bool Iceman::checkForBoulders(int k) {
@@ -384,11 +425,20 @@ bool Iceman::checkForBoulders(int k) {
 int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;
 }
+void Iceman::incNumOfSquirts() {
+	numOfSquirts_++;
+}
+void Iceman::decNumOfSquirts() {
+	numOfSquirts_--;
+}
 int Iceman::getNumOfSonars() {
 	return numOfSonars_;
 }
-void Iceman::increaseNumOfOil() {
-	numOfOil_++;
+void Iceman::incNumOfSonars() {
+	numOfSonars_++;
+}
+void Iceman::decNumOfSonars() {
+	numOfSonars_--;
 }
 
 int Protestor::updateMobilityCount()
