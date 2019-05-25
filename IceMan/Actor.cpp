@@ -75,8 +75,7 @@ void Boulder::doSomething()
 			{
 				setStable(false);
 				setFalling(true);
-				// play sound for boulder falling
-				getWorld()->playSound(SOUND_FALLING_ROCK);
+				getWorld()->playSound(SOUND_FALLING_ROCK);	// play sound for boulder falling
 			}
 		}
 
@@ -133,50 +132,66 @@ void Boulder::setCollided(bool b) {
 	They will have a state, temporary or permanent.
 	Child Classes: Barrel, Gold, Water
 */
-bool Item::IcemanCanPickUp() {
-	return IcemanCanPickUp_;
+bool Item::isTemp()
+{
+	return tempState_;
 }
-bool Item::ProtestorCanPickUp() {
-	return ProtestorCanPickUp_;
-}
-
 /*
 	CLASS: Barrel (Oil)
 	Once all Barrels are picked up from Iceman, the level ends.
 */
 void Barrel::doSomething()
 {
-	//Calculate distance from Iceman
-	int ix = getWorld()->IcemanPtr_->getX();
-	int iy = getWorld()->IcemanPtr_->getY();
-	int bx = getX();
-	int by = getY();
-	int x = abs(ix - bx);
-	int y = abs(iy - by);
-	double radius = sqrt(x * x + y * y);
-	if (isVisible() == false && radius <= 4)
-	{
+	/************************************************************
+		BEFORE
+	*************************************************************/
+	////Calculate distance from Iceman
+	//int ix = getWorld()->IcemanPtr_->getX();
+	//int iy = getWorld()->IcemanPtr_->getY();
+	//int bx = getX();
+	//int by = getY();
+	//int x = abs(ix - bx);
+	//int y = abs(iy - by);
+	//double radius = sqrt(x * x + y * y);
+	//if (isVisible() == false && radius <= 4)
+	//{
+	//	setVisible(true);
+	//	return;
+	//}
+	////Player picks up Oil and reduces barrelsRemaining_
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	for (int j = 0; j < 4; j++)
+	//	{
+	//		if (getWorld()->IcemanPtr_->getX() == getX() + i)
+	//		{
+	//			if (getWorld()->IcemanPtr_->getY() == getY() + j)
+	//			{
+	//				getWorld()->increaseScore(1000);
+	//				getWorld()->playSound(SOUND_FOUND_OIL);
+	//				getWorld()->decBarrels();
+	//				setActive(false);
+	//			}
+	//		}
+	//	}
+	//}
+
+	/************************************************************
+		AFTER
+	*************************************************************/
+	// determine if Iceman is close enough to see barrel
+	if (isVisible() == false && calcDistance(*getWorld()->IcemanPtr_) <= 4) {
 		setVisible(true);
 		return;
 	}
-	//Player picks up Oil and reduces barrelsRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(1000);
-					getWorld()->playSound(SOUND_FOUND_OIL);
-					getWorld()->decBarrels();
-					setActive(false);
-				}
-			}
-		}
-	}
 
+	// determine if Iceman is close enough to pick up barrel
+	if (calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_FOUND_OIL);
+		getWorld()->increaseScore(1000);
+		getWorld()->decBarrels();
+	}
 }
 
 /*
@@ -184,29 +199,26 @@ void Barrel::doSomething()
 */
 void Gold::doSomething()
 {
-	//Player picks up gold and reduces goldRemaining_
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (getWorld()->IcemanPtr_->getX() == getX() + i)
-			{
-				if (getWorld()->IcemanPtr_->getY() == getY() + j)
-				{
-					getWorld()->increaseScore(10);
-					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
-					getWorld()->IcemanPtr_->incGold();
-					setActive(false);
-				}
-			}
-		}
+	// determine if Gold is in temporary state
+	if (isTemp() == true) {
+		tempCount_--;
+		if (tempCount_ <= 0)
+			setActive(false);
 	}
-}
-bool Gold::isTemp() {
-	return tempState_;
-}
-int Gold::getTempCount() {
-	return tempCount_;
+
+	// determine if Iceman is close enough to see Gold
+	if (isVisible() == false && calcDistance(*getWorld()->IcemanPtr_) <= 4) {
+		setVisible(true);
+		return;
+	}
+
+	// determine if Iceman is close enough to pick up Gold (if not temporary)
+	if (isTemp() == false && calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(10);
+		getWorld()->IcemanPtr_->incGold();
+	}
 }
 
 /*
@@ -231,9 +243,8 @@ void Character::incGold() {
 	numOfGold_++;
 }
 
-void Character::decreaseHealth(unsigned int n)
-{
-	health_ - n;
+void Character::decGold() {
+	numOfGold_--;
 }
 
 /*
@@ -343,10 +354,35 @@ void Iceman::doSomething()
 			break;
 
 		case KEY_PRESS_ESCAPE:
-			// stop program
+			// decrement lives; end level
+			getWorld()->IcemanPtr_->setActive(false);
+			break;
+		
+		case KEY_PRESS_TAB:
+			// drop gold if available
+			if (getWorld()->IcemanPtr_->getNumOfGold() > 0) {
+				Gold* temp = new Gold(getWorld(), getX(), getY(), true);
+				getWorld()->currentActors.push_back(temp);
+				getWorld()->IcemanPtr_->decGold();
+			}
+			break;
+
+		case 'z':
+		case 'Z':
+			// use sonar if available
+			// dummy implementation
+			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+				getWorld()->currentActors[i]->GraphObject::setVisible(true);
+				getWorld()->IcemanPtr_->decNumOfSonars();
+			}
+			break;
+
+		case 127:
+			// used to stop program
 			exit(0);
 			break;
 		}
+		
 	}
 }
 bool Iceman::checkForBoulders(int k) {
@@ -389,11 +425,20 @@ bool Iceman::checkForBoulders(int k) {
 int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;
 }
+void Iceman::incNumOfSquirts() {
+	numOfSquirts_++;
+}
+void Iceman::decNumOfSquirts() {
+	numOfSquirts_--;
+}
 int Iceman::getNumOfSonars() {
 	return numOfSonars_;
 }
-void Iceman::increaseNumOfOil() {
-	numOfOil_++;
+void Iceman::incNumOfSonars() {
+	numOfSonars_++;
+}
+void Iceman::decNumOfSonars() {
+	numOfSonars_--;
 }
 
 int Protestor::updateMobilityCount()
@@ -410,18 +455,12 @@ void RegularProtestor::doSomething()
 		ticksToWaitBetweenMoves_--;
 	else if(ticksToWaitBetweenMoves_ == 0) //Protestor can move
 	{
-		//To ensure protestor only speaks once
-		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
-		{
-			leaveOilFieldState_ == true;
-			getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-		}
 		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
 		{
-			if (calcDistance(60, 60) <= 3)//If Protestor reaches exit
-			{
-				setActive(false);
-			}
+			//if (getLocation().xCoordinate == 60 && getLocation().yCoordinate == 60)//If Protestor reaches exit
+			//{
+			//	setActive(false);
+			//}
 			//Cannot be quirted or bonked
 
 			//Play sound SOUND_PROTESTOR_GIVE_UP
@@ -440,35 +479,19 @@ void RegularProtestor::doSomething()
 		//If Protestor is not trying to leave the oilField
 
 		//If protester is within radius of 4 and facing Iceman 
+		
 		//and has not shouted within the last 15 nonresting tick
-		if (calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) <= 4 &&
-			getWorld()->IcemanPtr_->getDirection() == this->getDirection()
-			&& yellingCounter <=0)
-		{
-			//Shout at Iceman
-			getWorld()->playSound(SOUND_PROTESTER_YELL);
-			
-			//Annoy Iceman by deducting 2 health points
-			getWorld()->IcemanPtr_->decreaseHealth(2);
-			//Reset shouting variable
-			yellingCounter = 15;
-		}
+		//Shout at Iceman
+		//Annoy Iceman by deducting 2 health points
+		//Reset shouting variable
+
 		//else if protestor is within vertical or horizontal line of sight of Iceman
 		//and is more than 4 radius away
-		else if (getWorld()->IcemanPtr_->getX() == getX() || getWorld()->IcemanPtr_->getY() == getY()
-			&& calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
-		{
-			//Change direction facing Iceman and move one step towards Iceman
-			if (getWorld()->IcemanPtr_->getDirection() != getDirection())
-			{
-				setDirection(getWorld()->IcemanPtr_->getDirection());
-			}
-			//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
-			//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
-			numSquaresToMoveInCurrentDirection_ = 0;
-			//then return
-			return;
-		}
+		//Change direction facing Iceman and move one step towards Iceman
+		//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
+		//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
+		//then return
+
 
 		//If the Protestor can not see Iceman then
 		//numSquaresToMoveInCurrentDirection--;
@@ -488,7 +511,7 @@ void RegularProtestor::doSomething()
 
 
 		//At the end of each movement reset ticksToWaitBetweenMoves
-		ticksToWaitBetweenMoves_ = updateMobilityCount();
+		//ticksToWaitBetweenMoves_ = updateMobilityCount();
 	}
 }
 

@@ -119,19 +119,19 @@ class Item : public Actor
 {
 public:
 	// ctors & dtors
-	Item(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth)
+	Item(StudentWorld* sw, int id, int x, int y, Direction dir, int size, int depth, bool tempState)
 		: Actor(sw, id, x, y, dir, size, depth)
-	{}
+	{
+		tempState_ = tempState;
+	}
 	virtual ~Item() {}
 
 	// behaviors
-	bool IcemanCanPickUp();
-	bool ProtestorCanPickUp();
+	bool isTemp();
 
 private:
 	// attributes
-	bool IcemanCanPickUp_;
-	bool ProtestorCanPickUp_;
+	bool tempState_;
 };
 
 /*
@@ -142,9 +142,9 @@ class Barrel : public Item
 {
 public:
 	// ctors & dtors
-	Barrel(StudentWorld* sw, int x, int y) : Item(sw, IID_BARREL, x, y, right, 1, 2)
+	Barrel(StudentWorld* sw, int x, int y) : Item(sw, IID_BARREL, x, y, right, 1, 2, false)
 	{
-		GraphObject::setVisible(true);
+		GraphObject::setVisible(false);
 	}
 	~Barrel() {}
 
@@ -161,25 +161,21 @@ class Gold : public Item
 {
 public:
 	// ctors & dtors
-	Gold(StudentWorld* sw, int x, int y, bool tempState) : Item(sw, IID_GOLD, x, y, right, 1, 2)
+	Gold(StudentWorld* sw, int x, int y, bool tempState) : Item(sw, IID_GOLD, x, y, right, 1, 2, tempState)
 	{
-		tempCount_ = 100;
-		tempState_ = tempState;
-		if (tempState_ == false)
+		if (tempState == false)
 			GraphObject::setVisible(false);
-		else
+		else if (tempState == true)
 			GraphObject::setVisible(true);
+
+		tempCount_ = 100;
 	}
 	~Gold() {}
 
 	// behaviors
 	virtual void doSomething();
-	bool isTemp();
-	int getTempCount();
 
-private:
 	// attributes
-	bool tempState_;
 	int tempCount_;
 };
 /*
@@ -220,14 +216,12 @@ public:
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
-	void decreaseHealth(unsigned int n);
-	
+	void decGold();
 
 private:
 	// attributes
 	int health_;
 	int numOfGold_;
-
 };
 
 /*
@@ -241,7 +235,6 @@ public:
 	{
 		numOfSquirts_ = 5;
 		numOfSonars_ = 1;
-		numOfOil_ = 0;
 		GraphObject::setVisible(true);
 	}
 	~Iceman() {}
@@ -250,14 +243,16 @@ public:
 	virtual void doSomething();
 	bool checkForBoulders(int k);
 	int getNumOfSquirts();
+	void incNumOfSquirts();
+	void decNumOfSquirts();
 	int getNumOfSonars();
-	void increaseNumOfOil();
+	void incNumOfSonars();
+	void decNumOfSonars();
 
 private:
 	// attributes
 	int numOfSquirts_;
 	int numOfSonars_;
-	int numOfOil_;
 	StudentWorld* sw_;
 };
 
@@ -271,25 +266,17 @@ public:
 		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
 		level_ = level;
 		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
-		yellingCounter = 15;
-		turningCounter = 200;
-		killedByBoulder = false;
-		killedByIceman = false;
 	}
 
 	//behaviors
 	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	virtual void doSomething() {}
-	bool hasLineOfSight();
 	// attributes
 	bool leaveOilFieldState_;
 	int numSquaresToMoveInCurrentDirection_;
 	int ticksToWaitBetweenMoves_;
 	int level_;
-	int yellingCounter;
-	int turningCounter;
-	bool killedByBoulder;
-	bool killedByIceman;
+
 };
 
 class RegularProtestor : public Protestor {

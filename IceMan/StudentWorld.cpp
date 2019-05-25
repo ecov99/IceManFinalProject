@@ -255,7 +255,7 @@ void StudentWorld::populateGold(int num)
 		}
 		if (isCovered && noNeighbors(x, y))
 		{
-			Gold* temp = new Gold(this, x, y, true);	// for testing, needs to be false
+			Gold* temp = new Gold(this, x, y, false);
 			currentActors.push_back(temp);
 		}
 		else
