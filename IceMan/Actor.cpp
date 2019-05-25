@@ -210,6 +210,11 @@ void Character::decGold() {
 	numOfGold_--;
 }
 
+void Character::decreaseHealth(unsigned int n)
+{
+	health_ - n;
+}
+
 /*
 	CLASS: Iceman
 	User controlled player.
@@ -416,14 +421,20 @@ void RegularProtestor::doSomething()
 		return;
 	if (ticksToWaitBetweenMoves_ > 0) //Protestor can not move
 		ticksToWaitBetweenMoves_--;
-	else if(ticksToWaitBetweenMoves_ == 0) //Protestor can move
+	else if (ticksToWaitBetweenMoves_ == 0) //Protestor can move
 	{
+		//To ensure protestor only speaks once
+		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
+		{
+			leaveOilFieldState_ == true;
+			getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+		}
 		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
 		{
-			//if (getLocation().xCoordinate == 60 && getLocation().yCoordinate == 60)//If Protestor reaches exit
-			//{
-			//	setActive(false);
-			//}
+			if (calcDistance(60, 60) <= 3)//If Protestor reaches exit
+			{
+				setActive(false);
+			}
 			//Cannot be quirted or bonked
 
 			//Play sound SOUND_PROTESTOR_GIVE_UP
@@ -438,23 +449,39 @@ void RegularProtestor::doSomething()
 
 			//returns
 		}
-		
+
 		//If Protestor is not trying to leave the oilField
 
 		//If protester is within radius of 4 and facing Iceman 
-		
 		//and has not shouted within the last 15 nonresting tick
-		//Shout at Iceman
-		//Annoy Iceman by deducting 2 health points
-		//Reset shouting variable
+		if (calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) <= 4 &&
+			getWorld()->IcemanPtr_->getDirection() == this->getDirection()
+			&& yellingCounter <= 0)
+		{
+			//Shout at Iceman
+			getWorld()->playSound(SOUND_PROTESTER_YELL);
 
+			//Annoy Iceman by deducting 2 health points
+			getWorld()->IcemanPtr_->decreaseHealth(2);
+			//Reset shouting variable
+			yellingCounter = 15;
+		}
 		//else if protestor is within vertical or horizontal line of sight of Iceman
 		//and is more than 4 radius away
-		//Change direction facing Iceman and move one step towards Iceman
-		//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
-		//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
-		//then return
-
+		else if (getWorld()->IcemanPtr_->getX() == getX() || getWorld()->IcemanPtr_->getY() == getY()
+			&& calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
+		{
+			//Change direction facing Iceman and move one step towards Iceman
+			if (getWorld()->IcemanPtr_->getDirection() != getDirection())
+			{
+				setDirection(getWorld()->IcemanPtr_->getDirection());
+			}
+			//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
+			//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
+			numSquaresToMoveInCurrentDirection_ = 0;
+			//then return
+			return;
+		}
 
 		//If the Protestor can not see Iceman then
 		//numSquaresToMoveInCurrentDirection--;
@@ -474,7 +501,7 @@ void RegularProtestor::doSomething()
 
 
 		//At the end of each movement reset ticksToWaitBetweenMoves
-		//ticksToWaitBetweenMoves_ = updateMobilityCount();
+		ticksToWaitBetweenMoves_ = updateMobilityCount();
 	}
 }
 
