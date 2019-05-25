@@ -220,11 +220,14 @@ public:
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
+	void decreaseHealth(unsigned int n);
+	
 
 private:
 	// attributes
 	int health_;
 	int numOfGold_;
+
 };
 
 /*
@@ -268,17 +271,25 @@ public:
 		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
 		level_ = level;
 		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
+		yellingCounter = 15;
+		turningCounter = 200;
+		killedByBoulder = false;
+		killedByIceman = false;
 	}
 
 	//behaviors
 	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	virtual void doSomething() {}
+	bool hasLineOfSight();
 	// attributes
 	bool leaveOilFieldState_;
 	int numSquaresToMoveInCurrentDirection_;
 	int ticksToWaitBetweenMoves_;
 	int level_;
-
+	int yellingCounter;
+	int turningCounter;
+	bool killedByBoulder;
+	bool killedByIceman;
 };
 
 class RegularProtestor : public Protestor {
