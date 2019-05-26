@@ -44,6 +44,58 @@ double Actor::calcDistance(int x, int y) {
 	double By = y;
 	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
+bool Actor::checkForBoulders(int dir) {
+	double temp;
+
+	// loop through current actors vector
+	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+
+		// check only boulders
+		if (getWorld()->currentActors[i]->getID() == IID_BOULDER) {
+
+			// check distance Actor is from each boulder
+			temp = calcDistance(*getWorld()->currentActors[i]);
+
+			// if boulder is within radius of 3.5
+			if (temp <= 3) {
+				// check for going up, if boulder is down
+				if (dir == KEY_PRESS_UP && getWorld()->currentActors[i]->getY() < this->getY())
+					return true;	// it's okay
+
+				// check for going down, if boulder is up
+				if (dir == KEY_PRESS_DOWN && getWorld()->currentActors[i]->getY() > this->getY())
+					return true;	// it's okay
+
+				// check for going left, if boulder is to the right
+				if (dir == KEY_PRESS_LEFT && getWorld()->currentActors[i]->getX() > this->getX())
+					return true;	// it's okay
+
+				// check for going right, if boulder is to the left
+				if (dir == KEY_PRESS_RIGHT && getWorld()->currentActors[i]->getX() < this->getX())
+					return true;	// it's okay
+
+				// otherwise, boulder is in direction of movement
+				return false;		// not okay
+			}
+		}
+	}
+	return true;	// Actor is not near boulder
+}
+
+bool Actor::checkForIce() {
+	bool isCovered = false;
+	for (int h = 0; h < 4; h++)
+	{
+		for (int g = 0; g < 4; g++)
+		{
+			if (getWorld()->iceField_[getX() + g][getY() + h] != nullptr)
+			{
+				isCovered = true;
+			}
+		}
+	}
+	return isCovered;
+}
 
 //Coordinate Actor::getLocation()
 //{
@@ -96,7 +148,7 @@ void Boulder::doSomething() {
 			getWorld()->IcemanPtr_->annoyed(tempID);
 			setCollided(true);
 		}
-		if (checkForIce() == false)		// if no ice, then move
+		if (checkForIceBelow() == false)		// if no ice, then move
 			moveTo(getX(), getY() - 1);
 		else							// otherwise, hit ice
 			setCollided(true);
@@ -132,7 +184,7 @@ bool Boulder::hasCollided() {
 void Boulder::setCollided(bool b) {
 	collided_ = b;
 }
-bool Boulder::checkForIce() {
+bool Boulder::checkForIceBelow() {
 	// if there is no ice below
 	if (getY() > 1 && getWorld()->iceField_[getX()][getY() - 1] == nullptr)
 		return false;
@@ -159,6 +211,56 @@ bool Boulder::checkCollision(int &victimID) {
 		}
 	}
 	return false;
+}
+
+
+/******************************************
+	CLASS: Squirt
+******************************************/
+void Squirt::doSomething() {
+
+	// MOVE UP if no boulder
+	if (this->getDirection() == up && checkForBoulders(this->getDirection()) && checkForIce() == false) {
+		moveTo(getX(), getY() + 1);
+		incMovementCount();
+	}
+
+	// MOVE DOWN if no boulder
+	else if (this->getDirection() == down && checkForBoulders(this->getDirection()) && checkForIce() == false) {
+		moveTo(getX(), getY() - 1);
+		incMovementCount();
+	}
+
+	// MOVE LEFT if no boulder
+	else if (this->getDirection() == left && checkForBoulders(this->getDirection()) && checkForIce() == false) {
+		moveTo(getX() - 1, getY());
+		incMovementCount();
+	}
+
+	// MOVE RIGHT if no boulder
+	else if (this->getDirection() == right && checkForBoulders(this->getDirection()) && checkForIce() == false) {
+		moveTo(getX() + 1, getY());
+		incMovementCount();
+	}
+	else {
+		setMoving(false);
+	}
+
+	if (getMovementCount() > 4 || isMoving() == false)
+		setActive(false);
+}
+
+int Squirt::getMovementCount() {
+	return movementCount_;
+}
+void Squirt::incMovementCount() {
+	movementCount_++;
+}
+bool Squirt::isMoving() {
+	return moving_;
+}
+void Squirt::setMoving(bool b) {
+	moving_ = b;
 }
 
 
@@ -299,20 +401,8 @@ void Iceman::doSomething()
 	/******************************************
 		REMOVE ICE
 	******************************************/
-	bool isCovered = false;
-	for (int h = 0; h < 4; h++)
+	if (checkForIce())
 	{
-		for (int g = 0; g < 4; g++)
-		{
-			if (getWorld()->iceField_[getX() + g][getY() + h] != nullptr)
-			{
-				isCovered = true;
-			}
-		}
-	}
-	if (isCovered)
-	{
-		
 		getWorld()->playSound(SOUND_DIG);
 		for (int i = 0; i < 4; i++)
 		{
@@ -450,6 +540,62 @@ void Iceman::doSomething()
 			break;
 
 		/******************************************
+			USE SQUIRT
+		******************************************/
+		case KEY_PRESS_SPACE:
+
+			// if there are squirts in inventory
+			if (getWorld()->IcemanPtr_->getNumOfSquirts() > 0) {
+
+				// UP
+				// if space is in bounds AND in same direction AND no boulder in direction
+				if (getY() < 60 && getWorld()->IcemanPtr_->getDirection() == up && checkSquirtLocation(up))
+				{
+					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() + 4, getWorld()->IcemanPtr_->getDirection());
+					getWorld()->currentActors.push_back(temp);
+					getWorld()->IcemanPtr_->decNumOfSquirts();
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+				}
+
+				// DOWN
+				// if space is in bounds AND in same direction AND no boulder in direction
+				else if (getY() > 0 && getWorld()->IcemanPtr_->getDirection() == down && checkSquirtLocation(down))
+				{
+					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() - 4, getWorld()->IcemanPtr_->getDirection());
+					getWorld()->currentActors.push_back(temp);
+					getWorld()->IcemanPtr_->decNumOfSquirts();
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+				}
+
+				// LEFT
+				// if space is in bounds AND in same direction AND no boulder in direction
+				else if (getX() > 0 && getWorld()->IcemanPtr_->getDirection() == left && checkSquirtLocation(left))
+				{
+					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() - 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
+					getWorld()->currentActors.push_back(temp);
+					getWorld()->IcemanPtr_->decNumOfSquirts();
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+				}
+
+				// RIGHT
+				// if space is in bounds AND in same direction AND no boulder in direction
+				else if (getX() < 60 && getWorld()->IcemanPtr_->getDirection() == right && checkSquirtLocation(right))
+				{
+					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() + 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
+					getWorld()->currentActors.push_back(temp);
+					getWorld()->IcemanPtr_->decNumOfSquirts();
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+				}
+
+				// otherwise, there is a boulder in front
+				else {
+					getWorld()->IcemanPtr_->decNumOfSquirts();
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+				}
+			}
+			break;
+
+		/******************************************
 			TESTING: used to increment Sonar
 		******************************************/
 		case 61:// PLUS
@@ -478,6 +624,13 @@ void Iceman::doSomething()
 			break;
 
 		/******************************************
+			TESTING: used to populate Water
+		******************************************/
+		case '-':
+			getWorld()->populateWater(getWorld()->getLevel());
+			break;
+
+		/******************************************
 			TESTING: stops program
 		******************************************/
 		case 127:// DEL
@@ -492,43 +645,6 @@ void Iceman::doSomething()
 void Iceman::annoyed(int fromID) {
 	if (fromID == IID_BOULDER)
 		health_ -= 100;
-}
-bool Iceman::checkForBoulders(int k) {
-	double temp;
-
-	// loop through current actors vector
-	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
-
-		// check only boulders
-		if (getWorld()->currentActors[i]->getID() == IID_BOULDER) {
-
-			// check distance Iceman is from each boulder
-			temp = calcDistance(*getWorld()->currentActors[i]);
-
-			// if boulder is within radius of 3.5
-			if (temp <= 3.5) {
-				// check for going up, if boulder is down
-				if (k == KEY_PRESS_UP && getWorld()->currentActors[i]->getY() < getWorld()->IcemanPtr_->getY())
-					return true;	// it's okay
-
-				// check for going down, if boulder is up
-				if (k == KEY_PRESS_DOWN && getWorld()->currentActors[i]->getY() > getWorld()->IcemanPtr_->getY())
-					return true;	// it's okay
-
-				// check for going left, if boulder is to the right
-				if (k == KEY_PRESS_LEFT && getWorld()->currentActors[i]->getX() > getWorld()->IcemanPtr_->getX())
-					return true;	// it's okay
-
-				// check for going right, if boulder is to the left
-				if (k == KEY_PRESS_RIGHT && getWorld()->currentActors[i]->getX() < getWorld()->IcemanPtr_->getX())
-					return true;	// it's okay
-
-				// otherwise, boulder is in direction of movement
-				return false;		// not okay
-			}
-		}
-	}
-	return true;	// Iceman is not near boulder
 }
 int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;
@@ -547,6 +663,44 @@ void Iceman::incNumOfSonars() {
 }
 void Iceman::decNumOfSonars() {
 	numOfSonars_--;
+}
+bool Iceman::checkSquirtLocation(int direction)
+{
+	double temp;
+
+	// loop through current actors vector
+	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+
+		// check only boulders
+		if (getWorld()->currentActors[i]->getID() == IID_BOULDER) {
+
+			// check distance Actor is from each boulder
+			temp = calcDistance(*getWorld()->currentActors[i]);
+
+			// if boulder is within radius
+			if (temp <= 3.5) {
+				// check for going up
+				if (direction == up && getWorld()->currentActors[i]->getY() > this->getY())
+					return false;	// it's not okay
+
+				// check for going down
+				if (direction == down && getWorld()->currentActors[i]->getY() < this->getY())
+					return false;	// it's not okay
+
+				// check for going left
+				if (direction == left && getWorld()->currentActors[i]->getX() < this->getX())
+					return false;	// it's not okay
+
+				// check for going right
+				if (direction == right && getWorld()->currentActors[i]->getX() > this->getX())
+					return false;	// it's not okay
+
+				// otherwise, boulder is in not direction of movement
+				return true;		// it's okay
+			}
+		}
+	}
+	return true;	// Actor is not near boulder
 }
 
 /******************************************

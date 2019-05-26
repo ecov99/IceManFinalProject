@@ -197,8 +197,10 @@ bool StudentWorld::hasIce(int x, int y)
 		{
 			if (iceField_[x + i][y + j] != nullptr)
 				temp = true;
-			else
+			else {
 				temp = false;
+				return temp;
+			}
 		}
 	}
 	return temp;
@@ -292,8 +294,8 @@ void StudentWorld::populateWater(int l)
 {
 	for (int h = 0; h < 1; h++)
 	{
-		int x = genRandNumber();
-		int y = genRandNumber();
+		int x = genRandNumber(0,60);
+		int y = genRandNumber(0, 60);
 
 		if (hasIce(x, y) == false)
 		{

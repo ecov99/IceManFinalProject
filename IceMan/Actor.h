@@ -38,6 +38,8 @@ public:
 	double calcDistance(Actor &other);
 	double calcDistance(Actor &other, int &tempID);
 	double calcDistance(int x, int y);
+	bool checkForBoulders(int dir);
+	bool checkForIce();
 
 private:
 	// attributes
@@ -92,7 +94,7 @@ public:
 	void setFalling(bool b);
 	bool hasCollided();
 	void setCollided(bool b);
-	bool checkForIce();
+	bool checkForIceBelow();
 	bool checkCollision(int &victimID);
 
 private:
@@ -109,6 +111,25 @@ private:
 class Squirt : public Actor
 {
 public:
+	// ctors & dtors
+	Squirt(StudentWorld* sw, int x, int y, Direction dir ) : Actor(sw, IID_WATER_SPURT, x, y, dir, 1, 1)
+	{
+		GraphObject::setVisible(true);
+		movementCount_ = 0;
+		moving_ = true;
+	}
+	~Squirt() {}
+
+	// behaviors
+	virtual void doSomething();
+	int getMovementCount();
+	void incMovementCount();
+	bool isMoving();
+	void setMoving(bool b);
+
+	// attribute
+	int movementCount_;
+	bool moving_;
 };
 
 /*
@@ -268,13 +289,13 @@ public:
 	// behaviors
 	virtual void doSomething();
 	virtual void annoyed(int fromID);
-	bool checkForBoulders(int k);
 	int getNumOfSquirts();
 	void incNumOfSquirts();
 	void decNumOfSquirts();
 	int getNumOfSonars();
 	void incNumOfSonars();
 	void decNumOfSonars();
+	bool checkSquirtLocation(int direction);
 
 private:
 	// attributes
