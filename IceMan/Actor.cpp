@@ -28,6 +28,15 @@ double Actor::calcDistance(Actor &other) {
 	double By = other.getY();
 	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
+double Actor::calcDistance(Actor &other, int &tempID) {
+	tempID = other.getID();
+
+	double Ax = this->getX();
+	double Ay = this->getY();
+	double Bx = other.getX();
+	double By = other.getY();
+	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
+}
 double Actor::calcDistance(int x, int y) {
 	double Ax = this->getX();
 	double Ay = this->getY();
@@ -77,28 +86,27 @@ void Boulder::doSomething() {
 				getWorld()->playSound(SOUND_FALLING_ROCK);	// play sound for boulder falling
 			}
 		}
-
 	}
 
 	// boulder is falling
 	if (isStable() == false && isFalling() == true && hasCollided() == false) {
-
-		if (getWorld()->iceField_[getX()][getY() - 1] == nullptr && getY() > 1)
-		{
-			moveTo(getX(), getY() - 1);
-		}
-
-		//Change collision if neccessary
-		if (getWorld()->iceField_[getX()][getY() - 1] != nullptr || getY() == 1)
-		{
+		
+		int tempID = -1;
+		if (checkCollision(tempID) == true) {	// if collided with an active Actor
+			getWorld()->IcemanPtr_->annoyed(tempID);
 			setCollided(true);
 		}
+		if (checkForIce() == false)		// if no ice, then move
+			moveTo(getX(), getY() - 1);
+		else							// otherwise, hit ice
+			setCollided(true);
+
+		if (getY() == 1)				// if bottom of field is reached
+			setCollided(true);
 	}
-	//Collision check
+	// check collision
 	if (hasCollided() == true)
-	{
 		setActive(false);
-	}
 }
 bool Boulder::isStable() {
 	return stable_;
@@ -123,6 +131,34 @@ bool Boulder::hasCollided() {
 }
 void Boulder::setCollided(bool b) {
 	collided_ = b;
+}
+bool Boulder::checkForIce() {
+	// if there is no ice below
+	if (getY() > 1 && getWorld()->iceField_[getX()][getY() - 1] == nullptr)
+		return false;
+	// otherwise there is ice below
+	else
+		return true;
+}
+bool Boulder::checkCollision(int &victimID) {
+	// loop through active Actors
+	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+		// if Actor is Iceman or a Protestor
+		if (getWorld()->currentActors[i]->getID() == IID_PLAYER ||
+			getWorld()->currentActors[i]->getID() == IID_PROTESTER ||
+			getWorld()->currentActors[i]->getID() == IID_HARD_CORE_PROTESTER)
+		{
+			// if Boulder is above Actor
+			if (getY() - 4 == getWorld()->currentActors[i]->getY() &&
+				getX() + 4 > getWorld()->currentActors[i]->getX() &&
+				getX() - 4 < getWorld()->currentActors[i]->getX())
+			{
+				victimID = getID();
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 
@@ -186,7 +222,47 @@ void Gold::doSomething()
 		getWorld()->IcemanPtr_->incGold();
 	}
 }
+bool Character::isAnnoyed() {
+	return annoyed_;
+}
+void Character::setAnnoyed(bool b) {
+	annoyed_ = b;
+}
 
+
+/******************************************
+	CLASS: Water
+******************************************/
+void Water::doSomething() {
+
+	tempCount_--;
+	if (tempCount_ <= 0)
+		setActive(false);
+	else if (calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->IcemanPtr_->incNumOfSquirts();
+		getWorld()->increaseScore(100);
+	}
+}
+
+
+/******************************************
+	CLASS: Sonar
+******************************************/
+void Sonar::doSomething() {
+
+	tempCount_--;
+	if (tempCount_ <= 0)
+		setActive(false);
+	else if (calcDistance(*getWorld()->IcemanPtr_) <= 3) {
+		setActive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->IcemanPtr_->incNumOfSonars();
+		getWorld()->increaseScore(75);
+	}
+
+}
 
 /******************************************
 	CLASS: Character
@@ -211,9 +287,6 @@ void Character::incGold() {
 }
 void Character::decGold() {
 	numOfGold_--;
-}
-void Character::decreaseHealth(unsigned int n) {
-	health_ - n;
 }
 
 
@@ -362,7 +435,7 @@ void Iceman::doSomething()
 		******************************************/
 		case 'z':
 		case 'Z':
-			if (getWorld()->IcemanPtr_->getNumOfSquirts() > 0) {
+			if (getWorld()->IcemanPtr_->getNumOfSonars() > 0) {
 				// loop through current Actors
 				for (int i = 0; i < getWorld()->currentActors.size(); i++) {
 					// if actor is hidden and within radius of 12
@@ -388,14 +461,18 @@ void Iceman::doSomething()
 		******************************************/
 		case 8:// BACKSPACE
 			// loop through active Actors
-			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+			for (int i = 1; i < getWorld()->currentActors.size(); i++) {
 				// toggle visibility of Actors
-				if (getWorld()->currentActors[i]->isVisible() == false) {
-					getWorld()->currentActors[i]->GraphObject::setVisible(true);
-				}
-				else {
-					if (getWorld()->currentActors[i]->getID() != IID_BOULDER)
-						getWorld()->currentActors[i]->GraphObject::setVisible(false);
+				if (getWorld()->currentActors[i]->getID() != IID_SONAR &&
+					getWorld()->currentActors[i]->getID() != IID_WATER_POOL)
+				{
+					if (getWorld()->currentActors[i]->isVisible() == false) {
+						getWorld()->currentActors[i]->GraphObject::setVisible(true);
+					}
+					else {
+						if (getWorld()->currentActors[i]->getID() != IID_BOULDER)
+							getWorld()->currentActors[i]->GraphObject::setVisible(false);
+					}
 				}
 			}
 			break;
@@ -408,6 +485,13 @@ void Iceman::doSomething()
 			break;
 		}
 	}
+
+	if (hasDied())
+		setActive(false);
+}
+void Iceman::annoyed(int fromID) {
+	if (fromID == IID_BOULDER)
+		health_ -= 100;
 }
 bool Iceman::checkForBoulders(int k) {
 	double temp;
@@ -450,7 +534,7 @@ int Iceman::getNumOfSquirts() {
 	return numOfSquirts_;
 }
 void Iceman::incNumOfSquirts() {
-	numOfSquirts_++;
+	numOfSquirts_ += 5;
 }
 void Iceman::decNumOfSquirts() {
 	numOfSquirts_--;
@@ -486,7 +570,7 @@ void RegularProtestor::doSomething()
 		//To ensure protestor only speaks once
 		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
 		{
-			leaveOilFieldState_ == true;
+			leaveOilFieldState_ = true;
 			getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
 		}
 		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
@@ -522,7 +606,11 @@ void RegularProtestor::doSomething()
 			getWorld()->playSound(SOUND_PROTESTER_YELL);
 
 			//Annoy Iceman by deducting 2 health points
-			getWorld()->IcemanPtr_->decreaseHealth(2);
+
+			/*************************************************
+				getWorld()->IcemanPtr_->decreaseHealth(2);
+			*************************************************/
+
 			//Reset shouting variable
 			yellingCounter = 15;
 		}

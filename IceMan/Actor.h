@@ -36,6 +36,7 @@ public:
 	void setActive(bool b);
 	StudentWorld* getWorld();
 	double calcDistance(Actor &other);
+	double calcDistance(Actor &other, int &tempID);
 	double calcDistance(int x, int y);
 
 private:
@@ -91,6 +92,8 @@ public:
 	void setFalling(bool b);
 	bool hasCollided();
 	void setCollided(bool b);
+	bool checkForIce();
+	bool checkCollision(int &victimID);
 
 private:
 	// attributes
@@ -123,14 +126,16 @@ public:
 		: Actor(sw, id, x, y, dir, size, depth)
 	{
 		tempState_ = tempState;
+		tempCount_ = 0;	// default for item class
 	}
 	virtual ~Item() {}
 
 	// behaviors
 	bool isTemp();
 
-private:
 	// attributes
+	int tempCount_;
+private:
 	bool tempState_;
 };
 
@@ -151,8 +156,6 @@ public:
 	// behaviors
 	virtual void doSomething();
 
-private:
-	// attributes
 };
 /*
 	CLASS: Gold
@@ -175,8 +178,6 @@ public:
 	// behaviors
 	virtual void doSomething();
 
-	// attributes
-	int tempCount_;
 };
 /*
 	Water Class
@@ -184,6 +185,16 @@ public:
 class Water : public Item
 {
 public:
+	// ctors & dtors
+	Water(StudentWorld* sw, int x, int y, int level) : Item(sw, IID_WATER_POOL, x, y, right, 1, 2, true)
+	{
+		tempCount_ = max(100, 300 - 10 * level);
+		GraphObject::setVisible(true);
+	}
+	~Water() {}
+
+	// behaviors
+	virtual void doSomething();
 };
 /*
 	Sonar Class
@@ -191,6 +202,17 @@ public:
 class Sonar : public Item
 {
 public:
+	// ctors & dtors
+	Sonar(StudentWorld* sw, int x, int y, int level) : Item(sw, IID_SONAR, x, y, right, 1, 2, true)
+	{
+		tempCount_ = max(100, 300-10*level);
+		GraphObject::setVisible(true);
+	}
+	~Sonar() {}
+
+	// behaviors
+	virtual void doSomething();
+
 };
 
 /*
@@ -207,22 +229,25 @@ public:
 	{
 		health_ = h;
 		numOfGold_ = 0;
+		annoyed_ = false;
 	}
 	virtual ~Character() {}
 
 	// behaviors
-	virtual void annoyed() {}
+	virtual void annoyed(int fromID) {}
+	bool isAnnoyed();
+	void setAnnoyed(bool b);
 	int getHealth();
 	int getNumOfGold();
 	bool hasDied();
 	void incGold();
 	void decGold();
-	void decreaseHealth(unsigned int n);
 
-private:
 	// attributes
 	int health_;
+private:
 	int numOfGold_;
+	bool annoyed_;
 };
 
 /*
@@ -242,6 +267,7 @@ public:
 
 	// behaviors
 	virtual void doSomething();
+	virtual void annoyed(int fromID);
 	bool checkForBoulders(int k);
 	int getNumOfSquirts();
 	void incNumOfSquirts();

@@ -25,6 +25,7 @@ int StudentWorld::init()
 {
 	//Step 1) Create Iceman
 	IcemanPtr_ = new Iceman(this);
+	currentActors.push_back(IcemanPtr_);
 	
 	//Step 2) Construct iceField
 
@@ -90,7 +91,7 @@ int StudentWorld::move()
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
-	for (int i = 0; i < currentActors.size(); i++)
+	for (int i = 1; i < currentActors.size(); i++)
 	{
 		if (currentActors[i]->isActive())		// if currentActor is active
 		{
@@ -98,7 +99,10 @@ int StudentWorld::move()
 		}
 	}
 
-	// Step 3) remove newly dead actors after each tick
+	// Step 3) populate random Actors
+	populateGoodies();
+
+	// Step 4) remove newly dead actors after each tick
 	removeDeadGameObject();
 
 	return GWSTATUS_CONTINUE_GAME;
@@ -114,15 +118,15 @@ void StudentWorld::cleanUp()
 	// Step 1) delete Iceman
 	delete IcemanPtr_;
 	IcemanPtr_ = nullptr;
-	
-	// Step 2) clear currentActors vector
-	for (int i = 0; i < currentActors.size(); i++) {
+
+	// Step 2) clear currentActors vector, except for Iceman at i=0
+	for (int i = 1; i < currentActors.size(); i++) {
 		delete currentActors[i];
 		currentActors[i] = nullptr;
 	}
 	currentActors.clear();
 
-	// Step 4) clear iceField; free smart ptrs AND vectors
+	// Step 3) clear iceField; free smart ptrs AND vectors
 	for (int i = 0; i < 64; i++) {
 		for (int j = 0; j < 64; j++) {
 			delete iceField_[i][j];
@@ -184,6 +188,22 @@ bool StudentWorld::noNeighbors(int x, int y)
 	return true;
 }
 
+bool StudentWorld::hasIce(int x, int y)
+{
+	bool temp = false;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (iceField_[x + i][y + j] != nullptr)
+				temp = true;
+			else
+				temp = false;
+		}
+	}
+	return temp;
+}
+
 void StudentWorld::genNumOfItems()
 {
 	int l = GameWorld::getLevel();
@@ -198,23 +218,9 @@ void StudentWorld::populateBoulder(int num)
 	{
 		int x = genRandNumber();
 		int y = genRandNumber();
-		bool isCovered;
-
-		// looks for 4x4 space that boulder image will appear
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				if (iceField_[x + i][y + i] != nullptr) {
-					isCovered = true;
-				}
-				else {
-					isCovered = false;
-					break;
-				}
-			}
-		}
 
 		// location found for boulder, remove ice
-		if (isCovered && noNeighbors(x, y))
+		if (hasIce(x, y) == true && noNeighbors(x, y))
 		{
 			for (int m = 0; m < 4; m++) {
 				for (int n = 0; n < 4; n++) {
@@ -233,72 +239,72 @@ void StudentWorld::populateBoulder(int num)
 
 void StudentWorld::populateGold(int num)
 {
-	for (int i = 0; i < num; i++)
+	for (int h = 0; h < num; h++)
 	{
 		int x = genRandNumber();
 		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)
+
+		if (hasIce(x, y) == true && noNeighbors(x, y))
 		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField_[x + g][y + h] != nullptr)
-				{
-					isCovered = true;
-				}
-				else
-				{
-					isCovered = false;
-					break;
-				}
-			}
-		}
-		if (isCovered && noNeighbors(x, y))
-		{
+			// pushes new gold
 			Gold* temp = new Gold(this, x, y, false);
 			currentActors.push_back(temp);
 		}
-		else
-		{
-			i--; //used to reset counter to retry genRandNumber
-		}
+		else	// reset counter and find new random numbers
+			h--;
 	}
 }
 
 void StudentWorld::populateBarrel(int num)
 {
-	for (int i = 0; i < num; i++)
+	for (int h = 0; h < num; h++)
 	{
 		int x = genRandNumber();
 		int y = genRandNumber();
-		bool isCovered = false;
-		for (int h = 0; h < 4; h++)
+
+		if (hasIce(x, y) == true && noNeighbors(x, y))
 		{
-			for (int g = 0; g < 4; g++)
-			{
-				if (iceField_[x + g][y + h] != nullptr)
-				{
-					isCovered = true;
-				}
-				else
-				{
-					isCovered = false;
-					break;
-				}
-			}
-		}
-		if (isCovered && noNeighbors(x, y))
-		{
+			// pushes new barrel
 			Barrel* temp = new Barrel(this, x, y);
 			currentActors.push_back(temp);
 		}
-		else
-		{
-			i--; // used to reset counter to retry genRandNumber
-		}
+		else	// reset counter and find new random numbers
+			h--;
 	}
 }
 
+void StudentWorld::populateGoodies() {
+	int l = getLevel();
+	int G = l * 25 + 100;
+
+	if (rand() % G == 0) {		// 1/G chance to gen either Sonar or Water
+		
+		if (rand() % 100 < 20) {	// 1/5 chance to gen Sonar
+			Sonar* temp = new Sonar(this, 0, 60, l);
+			currentActors.push_back(temp);
+		}
+		else {					// 4/5 chance to gen Water
+			populateWater(l);
+		}
+	}
+}
+void StudentWorld::populateWater(int l)
+{
+	for (int h = 0; h < 1; h++)
+	{
+		int x = genRandNumber();
+		int y = genRandNumber();
+
+		if (hasIce(x, y) == false)
+		{
+			// pushes new barrel
+			Water* temp = new Water(this, x, y, l);
+			currentActors.push_back(temp);
+		}
+		else	// reset counter and find new random numbers
+			h--;
+	}
+}
 void StudentWorld::removeDeadGameObject()
 {
 	// clears inactive actors
@@ -316,7 +322,7 @@ int StudentWorld::genRandNumber()
 {
 	int num;
 	const int MIN_VALUE = 1;
-	const int MAX_VALUE = 56;
+	const int MAX_VALUE = 60;
 	num = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
 	return num;
 }

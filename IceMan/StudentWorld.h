@@ -45,12 +45,13 @@ public:
 	int genRandNumber(int min, int max);
 	void setDisplayText();
 	bool noNeighbors(int x,  int y);
-
+	bool hasIce(int x, int y);
 	void genNumOfItems();
 	void populateBoulder(int num);
 	void populateGold(int num);
 	void populateBarrel(int num);
-
+	void populateWater(int l);
+	void populateGoodies();
 	void removeDeadGameObject();
 
 	/*
