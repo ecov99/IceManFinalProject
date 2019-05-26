@@ -1,16 +1,17 @@
-/*
+/*****************************************************
 	Actor.cpp will define all functions, except for ctors/dtors.
 	Has all logic and implementation.
-*/
+****************************************************/
 #include "Actor.h"
 #include "StudentWorld.h"
 
-/*
+
+/****************************************************
 	CLASS: Actor
 	Abstract Base Class for all other classes.
 	Cannot be instantiated.
 	Child Classes: Ice, Boulder, Squirt, Item, Character
-*/
+****************************************************/
 bool Actor::isActive() {
 	return active_;
 }
@@ -20,17 +21,14 @@ void Actor::setActive(bool b) {
 StudentWorld* Actor::getWorld() {
 	return sw_;
 }
-double Actor::calcDistance(Actor &other)
-{
+double Actor::calcDistance(Actor &other) {
 	double Ax = this->getX();
 	double Ay = this->getY();
 	double Bx = other.getX();
 	double By = other.getY();
 	return sqrt((pow(Ax - Bx, 2) + pow(Ay - By, 2)));
 }
-
-double Actor::calcDistance(int x, int y)
-{
+double Actor::calcDistance(int x, int y) {
 	double Ax = this->getX();
 	double Ay = this->getY();
 	double Bx = x;
@@ -43,12 +41,13 @@ double Actor::calcDistance(int x, int y)
 //	return Location_;
 //}
 
-/*
+
+/******************************************
 	CLASS: Boulder
-	Starts off stable. Falls once ice below is mined by Iceman.
-*/
-void Boulder::doSomething()
-{
+	Starts off stable.
+	Falls once ice below is mined by Iceman.
+******************************************/
+void Boulder::doSomething() {
 	// boulder is in the ice
 	if (isStable() == true && isFalling() == false && hasCollided() == false) {
 
@@ -125,21 +124,24 @@ bool Boulder::hasCollided() {
 void Boulder::setCollided(bool b) {
 	collided_ = b;
 }
-/*
+
+
+/******************************************
 	CLASS: Item
 	Abstract Base Class for all items that can be picked up.
 	Cannot be instantiated.
 	They will have a state, temporary or permanent.
 	Child Classes: Barrel, Gold, Water
-*/
-bool Item::isTemp()
-{
+******************************************/
+bool Item::isTemp() {
 	return tempState_;
 }
-/*
+
+
+/******************************************
 	CLASS: Barrel (Oil)
 	Once all Barrels are picked up from Iceman, the level ends.
-*/
+******************************************/
 void Barrel::doSomething()
 {
 	// determine if Iceman is close enough to see barrel
@@ -157,9 +159,10 @@ void Barrel::doSomething()
 	}
 }
 
-/*
+
+/******************************************
 	CLASS: Gold
-*/
+******************************************/
 void Gold::doSomething()
 {
 	// determine if Gold is in temporary state
@@ -184,12 +187,13 @@ void Gold::doSomething()
 	}
 }
 
-/*
+
+/******************************************
 	CLASS: Character
 	Abstract Base Class for all objects that can be annoyed()
 	Cannot be instantiated.
 	Child Classes: Iceman, Protestor
-*/
+******************************************/
 int Character::getHealth() {
 	return health_;
 }
@@ -205,20 +209,18 @@ bool Character::hasDied() {
 void Character::incGold() {
 	numOfGold_++;
 }
-
 void Character::decGold() {
 	numOfGold_--;
 }
-
-void Character::decreaseHealth(unsigned int n)
-{
+void Character::decreaseHealth(unsigned int n) {
 	health_ - n;
 }
 
-/*
+
+/******************************************
 	CLASS: Iceman
 	User controlled player.
-*/
+******************************************/
 void Iceman::doSomething()
 {
 	/******************************************
@@ -463,6 +465,10 @@ void Iceman::decNumOfSonars() {
 	numOfSonars_--;
 }
 
+/******************************************
+	CLASS: Protestors
+
+******************************************/
 int Protestor::updateMobilityCount()
 {
 	//calculate number of movements from 8 <= x <= 60
