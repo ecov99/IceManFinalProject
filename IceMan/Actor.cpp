@@ -221,7 +221,9 @@ void Character::decreaseHealth(unsigned int n)
 */
 void Iceman::doSomething()
 {
-	// Detecting if player is overlaying a visible Ice object
+	/******************************************
+		REMOVE ICE
+	******************************************/
 	bool isCovered = false;
 	for (int h = 0; h < 4; h++)
 	{
@@ -246,13 +248,18 @@ void Iceman::doSomething()
 			}
 		}
 	}
-	// player input 
+	/******************************************
+		PLAYER INPUT
+	******************************************/
 	int k;
 	if (getWorld()->getKey(k) == true)
 	{
-		//User hit a key this tick
+		// user pressed a key this tick
 		switch (k)
 		{
+		/******************************************
+			MOVE LEFT
+		******************************************/
 		case KEY_PRESS_LEFT:
 			// change direction
 			if (getDirection() != left)	
@@ -270,6 +277,9 @@ void Iceman::doSomething()
 			}
 			break;
 
+		/******************************************
+			MOVE RIGHT
+		******************************************/
 		case KEY_PRESS_RIGHT:
 			// change direction
 			if (getDirection() != right)
@@ -286,7 +296,10 @@ void Iceman::doSomething()
 				}
 			}
 			break;
-
+		
+		/******************************************
+			MOVE DOWN
+		******************************************/
 		case KEY_PRESS_DOWN:
 			// change direction
 			if (getDirection() != down)
@@ -304,6 +317,9 @@ void Iceman::doSomething()
 			}
 			break;
 
+		/******************************************
+			MOVE UP
+		******************************************/
 		case KEY_PRESS_UP:
 			// change direction
 			if (getDirection() != up)
@@ -321,13 +337,17 @@ void Iceman::doSomething()
 			}
 			break;
 
+		/******************************************
+			DIE
+		******************************************/
 		case KEY_PRESS_ESCAPE:
-			// decrement lives; end level
 			getWorld()->IcemanPtr_->setActive(false);
 			break;
 		
-		case KEY_PRESS_TAB:
-			// drop gold if available
+		/******************************************
+			DROP GOLD
+		******************************************/
+		case KEY_PRESS_TAB:	
 			if (getWorld()->IcemanPtr_->getNumOfGold() > 0) {
 				Gold* temp = new Gold(getWorld(), getX(), getY(), true);
 				getWorld()->currentActors.push_back(temp);
@@ -335,22 +355,56 @@ void Iceman::doSomething()
 			}
 			break;
 
+		/******************************************
+			USE SONAR
+		******************************************/
 		case 'z':
 		case 'Z':
-			// use sonar if available
-			// dummy implementation
-			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
-				getWorld()->currentActors[i]->GraphObject::setVisible(true);
+			if (getWorld()->IcemanPtr_->getNumOfSquirts() > 0) {
+				// loop through current Actors
+				for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+					// if actor is hidden and within radius of 12
+					if (getWorld()->currentActors[i]->isVisible() == false &&
+						calcDistance(*getWorld()->currentActors[i]) <= 12)
+					{
+						getWorld()->currentActors[i]->GraphObject::setVisible(true);
+					}
+				}
+				getWorld()->IcemanPtr_->decNumOfSonars();
 			}
-			getWorld()->IcemanPtr_->decNumOfSonars();
 			break;
 
-		case 127:
-			// used to stop program
+		/******************************************
+			TESTING: used to increment Sonar
+		******************************************/
+		case 61:// PLUS
+			getWorld()->IcemanPtr_->incNumOfSonars();
+			break;
+
+		/******************************************
+			TESTING: toggles visibility of actors
+		******************************************/
+		case 8:// BACKSPACE
+			// loop through active Actors
+			for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+				// toggle visibility of Actors
+				if (getWorld()->currentActors[i]->isVisible() == false) {
+					getWorld()->currentActors[i]->GraphObject::setVisible(true);
+				}
+				else {
+					if (getWorld()->currentActors[i]->getID() != IID_BOULDER)
+						getWorld()->currentActors[i]->GraphObject::setVisible(false);
+				}
+			}
+			break;
+
+		/******************************************
+			TESTING: stops program
+		******************************************/
+		case 127:// DEL
 			exit(0);
 			break;
 		}
-		
 	}
 }
 bool Iceman::checkForBoulders(int k) {
