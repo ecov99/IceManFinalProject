@@ -713,6 +713,28 @@ int Protestor::updateMobilityCount()
 	return getWorld()->genRandNumber(8, 60);
 }
 
+bool Protestor::hasLineOfSight()
+{
+	int icemanXCoord = getWorld()->currentActors[0]->getX();
+	int icemanYCoord = getWorld()->currentActors[0]->getY();
+	int protestorXCoord = this->getX();
+	int protestorYCoord = this->getY();
+	int deltaX = icemanXCoord - protestorXCoord;
+	int slope_m = ((icemanYCoord-protestorYCoord) / (icemanXCoord-protestorXCoord));
+	for (int i = 0; i < deltaX; i++)
+	{
+		int f_of_X = (slope_m * i) + protestorYCoord;
+		if(getWorld()->iceField_[protestorXCoord + i][protestorYCoord + f_of_X] != nullptr)
+			return false;
+	}
+	return true;
+}
+
+void Protestor::genNewDirection()
+{
+	int newDirection = getWorld()->genRandNumber(1, 4);
+}
+
 void RegularProtestor::doSomething()
 {
 	if (isActive() == false) //Checks if alive
@@ -729,7 +751,7 @@ void RegularProtestor::doSomething()
 		}
 		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
 		{
-			if (calcDistance(60, 60) <= 3)//If Protestor reaches exit
+			if (calcDistance(60, 60) <= 1)//If Protestor reaches exit
 			{
 				setActive(false);
 			}
@@ -745,7 +767,7 @@ void RegularProtestor::doSomething()
 
 			//Moves towards exit
 
-			//returns
+			return;
 		}
 
 		//If Protestor is not trying to leave the oilField
@@ -770,15 +792,14 @@ void RegularProtestor::doSomething()
 		}
 		//else if protestor is within vertical or horizontal line of sight of Iceman
 		//and is more than 4 radius away
-		else if (getWorld()->IcemanPtr_->getX() == getX() || getWorld()->IcemanPtr_->getY() == getY()
-			&& calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
+		else if (hasLineOfSight() && calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
 		{
 			//Change direction facing Iceman and move one step towards Iceman
 			if (getWorld()->IcemanPtr_->getDirection() != getDirection())
 			{
 				setDirection(getWorld()->IcemanPtr_->getDirection());
 			}
-			//set numSquaresToMoveinCurrentDirecton tp zero, forcing to pick a new direction during its
+			//set numSquaresToMoveinCurrentDirecton to zero, forcing to pick a new direction during its
 			//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
 			numSquaresToMoveInCurrentDirection_ = 0;
 			//then return
@@ -786,9 +807,14 @@ void RegularProtestor::doSomething()
 		}
 
 		//If the Protestor can not see Iceman then
-		//numSquaresToMoveInCurrentDirection--;
-		//if numSquaresToMoveInCurrentDirection <=0 then
-		//Protestor will pick a random direction
+		else if (hasLineOfSight() == false)
+		{
+			numSquaresToMoveInCurrentDirection_--;
+			if (numSquaresToMoveInCurrentDirection_ <= 0)
+			{
+				//Protestor will pick a random direction
+			}
+		}
 		//If Protestor can move in that direction, move numSquaresToMoveInCurrentDirection
 		//else choose new direction
 

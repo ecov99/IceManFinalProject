@@ -324,6 +324,7 @@ public:
 	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	virtual void doSomething() {}
 	bool hasLineOfSight();
+	void genNewDirection();
 	// attributes
 	bool leaveOilFieldState_;
 	int numSquaresToMoveInCurrentDirection_;
