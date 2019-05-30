@@ -143,17 +143,26 @@ void Boulder::doSomething() {
 	// boulder is falling
 	if (isStable() == false && isFalling() == true && hasCollided() == false) {
 		
-		int tempID = -1;
-		if (checkCollision(tempID) == true) {	// if collided with an active Actor
-			getWorld()->IcemanPtr_->annoyed(tempID);
+		int tempID = -1;	// initialize tempID to dummy value
+
+		// pass tempID by reference in order to update value
+		if (checkCollision(tempID) == true) {	// if collided with active Actor
+			
+			if (tempID == IID_PLAYER)		// if collided with ICEMAN
+				getWorld()->IcemanPtr_->annoyed(this->getID());
+				
 			setCollided(true);
 		}
-		if (checkForIceBelow() == false)		// if no ice, then move
+
+		// if no ice, then move
+		if (checkForIceBelow() == false)		
 			moveTo(getX(), getY() - 1);
-		else							// otherwise, hit ice
+		// otherwise, hit ice
+		else							
 			setCollided(true);
 
-		if (getY() == 1)				// if bottom of field is reached
+		// if bottom of field is reached
+		if (getY() == 1)				
 			setCollided(true);
 	}
 	// check collision
@@ -205,7 +214,7 @@ bool Boulder::checkCollision(int &victimID) {
 				getX() + 4 > getWorld()->currentActors[i]->getX() &&
 				getX() - 4 < getWorld()->currentActors[i]->getX())
 			{
-				victimID = getID();
+				victimID = getWorld()->currentActors[i]->getID();
 				return true;
 			}
 		}
