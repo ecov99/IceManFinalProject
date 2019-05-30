@@ -715,34 +715,292 @@ int Protestor::updateMobilityCount()
 
 bool Protestor::hasLineOfSight()
 {
-	int icemanXCoord = getWorld()->currentActors[0]->getX();
-	int icemanYCoord = getWorld()->currentActors[0]->getY();
-	int protestorXCoord = this->getX();
-	int protestorYCoord = this->getY();
-	int deltaX = icemanXCoord - protestorXCoord;
-	int slope_m = ((icemanYCoord-protestorYCoord) / (icemanXCoord-protestorXCoord));
-	for (int i = 0; i < deltaX; i++)
-	{
-		int f_of_X = (slope_m * i) + protestorYCoord;
-		if(getWorld()->iceField_[protestorXCoord + i][protestorYCoord + f_of_X] != nullptr)
-			return false;
+	//int icemanXCoord = getWorld()->currentActors[0]->getX();
+	//int icemanYCoord = getWorld()->currentActors[0]->getY();
+	//int protestorXCoord = this->getX();
+	//int protestorYCoord = this->getY();
+	//int deltaX = abs(icemanXCoord - protestorXCoord);
+	//if((icemanXCoord - protestorXCoord) != 0)
+	//{ 
+	//	int slope_m = ((icemanYCoord-protestorYCoord) / (icemanXCoord-protestorXCoord)); 
+	//	for (int x = 0; x < deltaX; x++)
+	//	{
+	//		int f_of_X = (slope_m * x) + protestorYCoord;
+	//		if(getWorld()->iceField_[protestorXCoord + x][protestorYCoord + f_of_X] != nullptr)
+	//			return false;
+	//	}
+	//}
+	//return true;
+
+	// get x,y coordinates of both iceman and protestors
+	int xP = this->getX();
+	int yP = this->getY();
+	int xI = getWorld()->IcemanPtr_->getX();
+	int yI = getWorld()->IcemanPtr_->getY();
+	double deltaX = xI - xP;
+	
+	// calculate slope of line for each quadrant
+	if (deltaX != 0) {
+		double m = (yI - yP) / (xI - xP);
+		if(m != 0)
+		{ 
+			// check every point along line for ice
+			// QUAD I
+			if (m > 0 && xP < xI) {
+				for (int x = 0; x <= deltaX; x++) {
+					int temp = m * x + yP;
+					if (getWorld()->iceField_[xP+x][temp] != nullptr)
+						return false;
+				}
+				return true;
+			}
+
+			// QUAD II
+			else if (m < 0 && xP > xI && deltaX < 0) {
+				for (int x = 0; x <= deltaX; x--) {
+					int temp = m * x + yP;
+					if (getWorld()->iceField_[xI + x][temp] != nullptr)
+						return false;
+				}
+				return true;
+			}
+
+			// QUAD III
+			else if (m > 0 && xP > xI && deltaX < 0) {
+				for (int x = 0; x <= deltaX; x--) {
+					int temp = m * x + yI;
+					if (getWorld()->iceField_[xI + x][temp] != nullptr)
+						return false;
+				}
+				return true;
+			}
+
+			// QUAD IV
+			else if (m < 0 && xP < xI && deltaX > 0) {
+				for (int x = 0; x < deltaX; x++) {
+					int temp = m * x + yI;
+					if (getWorld()->iceField_[xP + x][temp] != nullptr)
+						return false;
+				}
+				return true;
+			}
+		}
+		else // horizontal lines
+		{
+			// iceman is on the right
+			if (xI > xP) {
+				for (int x = xP; x <= xI; x++) {
+					if (getWorld()->iceField_[xP + x][yP] != nullptr)
+						return false;
+				}
+				return false;
+			}
+			// iceman is on the left
+			else if (xI < xP) {
+				for (int x = xI; x <= xP; x++) {
+					if (getWorld()->iceField_[xP + x][yP] != nullptr)
+						return false;
+				}
+				return true;
+			}
+		}
 	}
-	return true;
+	else // vertical lines
+	{
+		// iceman is above
+		if (yP < yI) {
+			for (int y = 0; y <= (yI - yP); y++) {
+				if (getWorld()->iceField_[xP][yP + y] != nullptr)
+					return false;
+			}
+			return true;
+		}	
+		// iceman is below
+		else if (yP > yI) {
+			for (int y = 0; y <= (yP - yI); y++) {
+				if (getWorld()->iceField_[xP][yI + y] != nullptr)
+					return false;
+			}
+			return true;
+		}
+		
+	}
 }
 
 void Protestor::genNewDirection()
 {
 	int newDirection = getWorld()->genRandNumber(1, 4);
+	int oldDirection = getDirection();
+
+	switch (newDirection)
+	{
+		case 1:
+		{
+			if (oldDirection != newDirection)
+			{
+				setDirection(left);
+			}
+			else
+			{
+				setDirection(right);
+			}
+			break;
+		}
+		case 2:
+		{
+			if (oldDirection != newDirection)
+			{
+				setDirection(right);
+			}
+			else
+			{
+				setDirection(left);
+			}
+			break;
+		}
+		case 3:
+		{
+			if (oldDirection != newDirection)
+			{
+				setDirection(up);
+			}
+			else
+			{
+				setDirection(down);
+			}
+			break;
+		}
+		case 4:
+		{
+			if (oldDirection != newDirection)
+			{
+				setDirection(down);
+			}
+			else
+			{
+				setDirection(up);
+			}
+			break;
+		}
+	}
+
+}
+
+void Protestor::testLineOfSight()
+{
+	if (hasLineOfSight() == true)
+		cout << "I HAVE LINE OF SIGHT!" << endl;
 }
 
 void RegularProtestor::doSomething()
 {
-	if (isActive() == false) //Checks if alive
-		return;
-	if (ticksToWaitBetweenMoves_ > 0) //Protestor can not move
+	ticksToWaitBetweenMoves_ = 0; //TESTING PURPOSES REMOVE AFTER TESTING
+
+	if (ticksToWaitBetweenMoves_ > 0)			// Protestor can not move
 		ticksToWaitBetweenMoves_--;
-	else if (ticksToWaitBetweenMoves_ == 0) //Protestor can move
+	else if (ticksToWaitBetweenMoves_ == 0)		// Protestor can move
 	{
+		/*********************************************************
+			TEST BEGIN
+		*********************************************************/
+		int t;
+		if (getWorld()->getKey(t) == true)
+		{
+			// user pressed a key this tick
+			switch (t)
+			{
+			/******************************************
+				MOVE LEFT
+			******************************************/
+			case 'j':
+			case 'J':
+				// change direction
+				if (getDirection() != left)
+				{
+					setDirection(left);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getX() > 0 && checkForBoulders(t))
+					{
+						moveTo(getX() - 1, getY());
+					}
+				}
+				break;
+
+			/******************************************
+				MOVE RIGHT
+			******************************************/
+			case 'l':
+			case 'L':
+				// change direction
+				if (getDirection() != right)
+				{
+					setDirection(right);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getX() < 60 && checkForBoulders(t))
+					{
+						moveTo(getX() + 1, getY());
+					}
+				}
+				break;
+
+			/******************************************
+				MOVE DOWN
+			******************************************/
+			case 'k':
+			case 'K':
+				// change direction
+				if (getDirection() != down)
+				{
+					setDirection(down);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getY() > 0 && checkForBoulders(t))
+					{
+						moveTo(getX(), getY() - 1);
+					}
+				}
+				break;
+
+			/******************************************
+				MOVE UP
+			******************************************/
+			case 'i':
+			case 'I':
+				// change direction
+				if (getDirection() != up)
+				{
+					setDirection(up);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getY() < 60 && checkForBoulders(t))
+					{
+						moveTo(getX(), getY() + 1);
+					}
+				}
+				break;
+			}
+		}
+
+
+
+
+		/*********************************************************
+			TEST END
+		*********************************************************/
 		//To ensure protestor only speaks once
 		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
 		{
@@ -769,7 +1027,7 @@ void RegularProtestor::doSomething()
 
 			return;
 		}
-
+		testLineOfSight();
 		//If Protestor is not trying to leave the oilField
 
 		//If protester is within radius of 4 and facing Iceman 
@@ -794,11 +1052,11 @@ void RegularProtestor::doSomething()
 		//and is more than 4 radius away
 		else if (hasLineOfSight() && calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
 		{
-			//Change direction facing Iceman and move one step towards Iceman
-			if (getWorld()->IcemanPtr_->getDirection() != getDirection())
-			{
-				setDirection(getWorld()->IcemanPtr_->getDirection());
-			}
+			////Change direction facing Iceman and move one step towards Iceman
+			//if (getWorld()->IcemanPtr_->getDirection() != getDirection())
+			//{
+			//	setDirection(getWorld()->IcemanPtr_->getDirection());
+			//}
 			//set numSquaresToMoveinCurrentDirecton to zero, forcing to pick a new direction during its
 			//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
 			numSquaresToMoveInCurrentDirection_ = 0;
@@ -835,4 +1093,5 @@ void RegularProtestor::doSomething()
 
 void HardcoreProtestor::doSomething()
 {
+	
 }

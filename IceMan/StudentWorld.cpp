@@ -26,6 +26,8 @@ int StudentWorld::init()
 	//Step 1) Create Iceman
 	IcemanPtr_ = new Iceman(this);
 	currentActors.push_back(IcemanPtr_);
+	testProt_ = new RegularProtestor(this,1);
+	currentActors.push_back(testProt_);
 	
 	//Step 2) Construct iceField
 
@@ -78,8 +80,10 @@ int StudentWorld::move()
 	setDisplayText();
 
 	// Step 2) give each Actor a chance to do something
+	testProt_->doSomething();
 	IcemanPtr_->doSomething();
-
+	
+	
 	if (IcemanPtr_->isActive() == false)	// if iceman/player died
 	{
 		decLives();

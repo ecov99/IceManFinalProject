@@ -307,7 +307,7 @@ private:
 class Protestor : public Character {
 public:
 	// ctors & dtors
-	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 60, 60, left, 1, 0, health)
+	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 30, 30, left, 1, 0, health)
 	{
 		setVisible(true);
 		leaveOilFieldState_ = false;
@@ -325,6 +325,8 @@ public:
 	virtual void doSomething() {}
 	bool hasLineOfSight();
 	void genNewDirection();
+	void testLineOfSight();
+
 	// attributes
 	bool leaveOilFieldState_;
 	int numSquaresToMoveInCurrentDirection_;

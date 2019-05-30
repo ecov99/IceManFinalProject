@@ -64,7 +64,7 @@ public:
 	int bouldersRemaining_;
 	
 	Iceman* IcemanPtr_; // points to IcemanPtr_
-	RegularProtestor* test_;
+	RegularProtestor* testProt_;
 };
 
 #endif // STUDENTWORLD_H_
