@@ -326,6 +326,7 @@ public:
 	bool hasLineOfSight();
 	void genNewDirection();
 	void testLineOfSight();
+	bool isFacing();
 
 	// attributes
 	bool leaveOilFieldState_;

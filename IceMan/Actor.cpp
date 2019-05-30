@@ -715,22 +715,6 @@ int Protestor::updateMobilityCount()
 
 bool Protestor::hasLineOfSight()
 {
-	//int icemanXCoord = getWorld()->currentActors[0]->getX();
-	//int icemanYCoord = getWorld()->currentActors[0]->getY();
-	//int protestorXCoord = this->getX();
-	//int protestorYCoord = this->getY();
-	//int deltaX = abs(icemanXCoord - protestorXCoord);
-	//if((icemanXCoord - protestorXCoord) != 0)
-	//{ 
-	//	int slope_m = ((icemanYCoord-protestorYCoord) / (icemanXCoord-protestorXCoord)); 
-	//	for (int x = 0; x < deltaX; x++)
-	//	{
-	//		int f_of_X = (slope_m * x) + protestorYCoord;
-	//		if(getWorld()->iceField_[protestorXCoord + x][protestorYCoord + f_of_X] != nullptr)
-	//			return false;
-	//	}
-	//}
-	//return true;
 
 	// get x,y coordinates of both iceman and protestors
 	int xP = this->getX();
@@ -738,93 +722,165 @@ bool Protestor::hasLineOfSight()
 	int xI = getWorld()->IcemanPtr_->getX();
 	int yI = getWorld()->IcemanPtr_->getY();
 	double deltaX = xI - xP;
-	
-	// calculate slope of line for each quadrant
-	if (deltaX != 0) {
-		double m = (yI - yP) / (xI - xP);
-		if(m != 0)
-		{ 
-			// check every point along line for ice
-			// QUAD I
-			if (m > 0 && xP < xI) {
-				for (int x = 0; x <= deltaX; x++) {
-					int temp = m * x + yP;
-					if (getWorld()->iceField_[xP+x][temp] != nullptr)
-						return false;
-				}
-				return true;
-			}
 
-			// QUAD II
-			else if (m < 0 && xP > xI && deltaX < 0) {
-				for (int x = 0; x <= deltaX; x--) {
-					int temp = m * x + yP;
-					if (getWorld()->iceField_[xI + x][temp] != nullptr)
-						return false;
-				}
-				return true;
-			}
-
-			// QUAD III
-			else if (m > 0 && xP > xI && deltaX < 0) {
-				for (int x = 0; x <= deltaX; x--) {
-					int temp = m * x + yI;
-					if (getWorld()->iceField_[xI + x][temp] != nullptr)
-						return false;
-				}
-				return true;
-			}
-
-			// QUAD IV
-			else if (m < 0 && xP < xI && deltaX > 0) {
-				for (int x = 0; x < deltaX; x++) {
-					int temp = m * x + yI;
-					if (getWorld()->iceField_[xP + x][temp] != nullptr)
-						return false;
-				}
-				return true;
-			}
-		}
-		else // horizontal lines
-		{
-			// iceman is on the right
-			if (xI > xP) {
-				for (int x = xP; x <= xI; x++) {
-					if (getWorld()->iceField_[xP + x][yP] != nullptr)
-						return false;
-				}
-				return false;
-			}
-			// iceman is on the left
-			else if (xI < xP) {
-				for (int x = xI; x <= xP; x++) {
-					if (getWorld()->iceField_[xP + x][yP] != nullptr)
-						return false;
-				}
-				return true;
-			}
-		}
-	}
-	else // vertical lines
+	if (yP == yI)
 	{
-		// iceman is above
-		if (yP < yI) {
-			for (int y = 0; y <= (yI - yP); y++) {
-				if (getWorld()->iceField_[xP][yP + y] != nullptr)
-					return false;
-			}
-			return true;
-		}	
-		// iceman is below
-		else if (yP > yI) {
-			for (int y = 0; y <= (yP - yI); y++) {
-				if (getWorld()->iceField_[xP][yI + y] != nullptr)
-					return false;
+		if (xP < xI)
+		{
+			for (int x = xP; x <= xI; x++)
+			{
+				for (int y = yP; y < (yP + 4); y++)
+				{
+					//If has Ice
+					if (getWorld()->iceField_[x][y] != nullptr)
+					{
+						//Has ice return false
+						//Does not have line of sight
+						return false;
+					}
+
+				}
 			}
 			return true;
 		}
-		
+		else if (xP > xI)
+		{
+			for (int x = xI; x <= xP; x++)
+			{
+				for (int y = yI; y < (yI + 4); y++)
+				{
+					//If has Ice
+					if (getWorld()->iceField_[x][y] != nullptr)
+					{
+						//Has ice return false
+						//Does not have line of sight
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 	}
+	else if(xP == xI)
+	{
+		if (yP > yI)
+		{
+			for (int x = xI; x < (xI + 4); x++)
+			{
+				for (int y = yI; y <= yP; y++)
+				{
+					//If has Ice
+					if (getWorld()->iceField_[x][y] != nullptr)
+					{
+						//Has ice return false
+						//Does not have line of sight
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		else if (yP < yI)
+		{
+			for (int x = xP; x < (xP + 4); x++)
+			{
+				for (int y = yP; y <= yI; y++)
+				{
+					//If has Ice
+					if (getWorld()->iceField_[x][y] != nullptr)
+					{
+						//Has ice return false
+						//Does not have line of sight
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	}
+	//// calculate slope of line for each quadrant
+	//if (deltaX != 0) {
+	//	double m = (yI - yP) / (xI - xP);
+	//	if(m != 0)
+	//	{ 
+	//		// check every point along line for ice
+	//		// QUAD I
+	//		if (m > 0 && xP < xI) {
+	//			for (int x = 0; x <= deltaX; x++) {
+	//				int temp = m * x + yP;
+	//				if (getWorld()->iceField_[xP+x][temp] != nullptr)
+	//					return false;
+	//			}
+	//			return true;
+	//		}
+	//		// QUAD II
+	//		else if (m < 0 && xP > xI && deltaX < 0) {
+	//			for (int x = 0; x <= deltaX; x--) {
+	//				int temp = m * x + yP;
+	//				if (getWorld()->iceField_[xI + x][temp] != nullptr)
+	//					return false;
+	//			}
+	//			return true;
+	//		}
+	//		// QUAD III
+	//		else if (m > 0 && xP > xI && deltaX < 0) {
+	//			for (int x = 0; x <= deltaX; x--) {
+	//				int temp = m * x + yI;
+	//				if (getWorld()->iceField_[xI + x][temp] != nullptr)
+	//					return false;
+	//			}
+	//			return true;
+	//		}
+	//		// QUAD IV
+	//		else if (m < 0 && xP < xI && deltaX > 0) {
+	//			for (int x = 0; x < deltaX; x++) {
+	//				int temp = m * x + yI;
+	//				if (getWorld()->iceField_[xP + x][temp] != nullptr)
+	//					return false;
+	//			}
+	//			return true;
+	//		}
+	//	}
+	//	else // horizontal lines
+	//	{
+	//		// iceman is on the right
+	//		if (xI > xP) {
+	//			for (int x = xP; x <= xI; x++) {
+	//				if (getWorld()->iceField_[xP + x][yP] != nullptr)
+	//					return false;
+	//			}
+	//			return false;
+	//		}
+	//		// iceman is on the left
+	//		else if (xI < xP) {
+	//			for (int x = xI; x <= xP; x++) {
+	//				if (getWorld()->iceField_[xP + x][yP] != nullptr)
+	//					return false;
+	//			}
+	//			return true;
+	//		}
+	//	}
+	//}
+	//else // vertical lines
+	//{
+	//	// iceman is above
+	//	if (yP < yI) {
+	//		for (int y = 0; y <= (yI - yP); y++) {
+	//			if (getWorld()->iceField_[xP][yP + y] != nullptr)
+	//				return false;
+	//		}
+	//		return true;
+	//	}	
+	//	// iceman is below
+	//	else if (yP > yI) {
+	//		for (int y = 0; y <= (yP - yI); y++) {
+	//			if (getWorld()->iceField_[xP][yI + y] != nullptr)
+	//				return false;
+	//		}
+	//		return true;
+	//	}
+	//	
+	//}
 }
 
 void Protestor::genNewDirection()
@@ -892,6 +948,35 @@ void Protestor::testLineOfSight()
 		cout << "I HAVE LINE OF SIGHT!" << endl;
 }
 
+bool Protestor::isFacing()
+{
+	int proDir = this->getDirection();
+	int iceX = getWorld()->IcemanPtr_->getX();
+	int iceY = getWorld()->IcemanPtr_->getY();
+	int proX = this->getX();
+	int proY = this->getY();
+
+	if (iceY > proY && proDir == up) //If Iceman is above
+	{
+		return true;
+	}
+	else if (iceY < proY && proDir == down)//If Iceman is below
+	{
+		return true;
+	}
+	else if (iceX < proX && proDir == left)//If ICeman is to the left
+	{
+		return true;
+	}
+	else if (iceX > proX && proDir == right)//If Iceman is to the right
+	{
+		return true;
+	}
+
+	//If none is true return false
+	return false;
+}
+
 void RegularProtestor::doSomething()
 {
 	ticksToWaitBetweenMoves_ = 0; //TESTING PURPOSES REMOVE AFTER TESTING
@@ -900,107 +985,101 @@ void RegularProtestor::doSomething()
 		ticksToWaitBetweenMoves_--;
 	else if (ticksToWaitBetweenMoves_ == 0)		// Protestor can move
 	{
-		/*********************************************************
-			TEST BEGIN
-		*********************************************************/
-		int t;
-		if (getWorld()->getKey(t) == true)
-		{
-			// user pressed a key this tick
-			switch (t)
-			{
-			/******************************************
-				MOVE LEFT
-			******************************************/
-			case 'j':
-			case 'J':
-				// change direction
-				if (getDirection() != left)
-				{
-					setDirection(left);
-				}
-				// move
-				else
-				{
-					// if space is in bounds and no boulder
-					if (getX() > 0 && checkForBoulders(t))
-					{
-						moveTo(getX() - 1, getY());
-					}
-				}
-				break;
+		//*********************************************************
+		//	TEST BEGIN
+		//*********************************************************/
+		//int t;
+		//if (getWorld()->getKey(t) == true)
+		//{
+		//	// user pressed a key this tick
+		//	switch (t)
+		//	{
+		//	/******************************************
+		//		MOVE LEFT
+		//	******************************************/
+		//	case 'j':
+		//	case 'J':
+		//		// change direction
+		//		if (getDirection() != left)
+		//		{
+		//			setDirection(left);
+		//		}
+		//		// move
+		//		else
+		//		{
+		//			// if space is in bounds and no boulder
+		//			if (getX() > 0 && checkForBoulders(t))
+		//			{
+		//				moveTo(getX() - 1, getY());
+		//			}
+		//		}
+		//		break;
+		//	/******************************************
+		//		MOVE RIGHT
+		//	******************************************/
+		//	case 'l':
+		//	case 'L':
+		//		// change direction
+		//		if (getDirection() != right)
+		//		{
+		//			setDirection(right);
+		//		}
+		//		// move
+		//		else
+		//		{
+		//			// if space is in bounds and no boulder
+		//			if (getX() < 60 && checkForBoulders(t))
+		//			{
+		//				moveTo(getX() + 1, getY());
+		//			}
+		//		}
+		//		break;
+		//	/******************************************
+		//		MOVE DOWN
+		//	******************************************/
+		//	case 'k':
+		//	case 'K':
+		//		// change direction
+		//		if (getDirection() != down)
+		//		{
+		//			setDirection(down);
+		//		}
+		//		// move
+		//		else
+		//		{
+		//			// if space is in bounds and no boulder
+		//			if (getY() > 0 && checkForBoulders(t))
+		//			{
+		//				moveTo(getX(), getY() - 1);
+		//			}
+		//		}
+		//		break;
+		//	/******************************************
+		//		MOVE UP
+		//	******************************************/
+		//	case 'i':
+		//	case 'I':
+		//		// change direction
+		//		if (getDirection() != up)
+		//		{
+		//			setDirection(up);
+		//		}
+		//		// move
+		//		else
+		//		{
+		//			// if space is in bounds and no boulder
+		//			if (getY() < 60 && checkForBoulders(t))
+		//			{
+		//				moveTo(getX(), getY() + 1);
+		//			}
+		//		}
+		//		break;
+		//	}
+		//}
+		//*********************************************************
+		//	TEST END
+		//*********************************************************/
 
-			/******************************************
-				MOVE RIGHT
-			******************************************/
-			case 'l':
-			case 'L':
-				// change direction
-				if (getDirection() != right)
-				{
-					setDirection(right);
-				}
-				// move
-				else
-				{
-					// if space is in bounds and no boulder
-					if (getX() < 60 && checkForBoulders(t))
-					{
-						moveTo(getX() + 1, getY());
-					}
-				}
-				break;
-
-			/******************************************
-				MOVE DOWN
-			******************************************/
-			case 'k':
-			case 'K':
-				// change direction
-				if (getDirection() != down)
-				{
-					setDirection(down);
-				}
-				// move
-				else
-				{
-					// if space is in bounds and no boulder
-					if (getY() > 0 && checkForBoulders(t))
-					{
-						moveTo(getX(), getY() - 1);
-					}
-				}
-				break;
-
-			/******************************************
-				MOVE UP
-			******************************************/
-			case 'i':
-			case 'I':
-				// change direction
-				if (getDirection() != up)
-				{
-					setDirection(up);
-				}
-				// move
-				else
-				{
-					// if space is in bounds and no boulder
-					if (getY() < 60 && checkForBoulders(t))
-					{
-						moveTo(getX(), getY() + 1);
-					}
-				}
-				break;
-			}
-		}
-
-
-
-
-		/*********************************************************
-			TEST END
-		*********************************************************/
 		//To ensure protestor only speaks once
 		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
 		{
@@ -1027,23 +1106,18 @@ void RegularProtestor::doSomething()
 
 			return;
 		}
-		//testLineOfSight();
 		//If Protestor is not trying to leave the oilField
-
+		yellingCounter--;
 		//If protester is within radius of 4 and facing Iceman 
 		//and has not shouted within the last 15 nonresting tick
-		if (calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) <= 4 &&
-			getWorld()->IcemanPtr_->getDirection() == this->getDirection()
-			&& yellingCounter <= 0)
+		if (calcDistance(*getWorld()->IcemanPtr_) <= 4 && isFacing() && yellingCounter <= 0)
 		{
 			//Shout at Iceman
 			getWorld()->playSound(SOUND_PROTESTER_YELL);
 
 			//Annoy Iceman by deducting 2 health points
-
-			/*************************************************
-				getWorld()->IcemanPtr_->decreaseHealth(2);
-			*************************************************/
+			//getWorld()->IcemanPtr_->decreaseHealth(2);
+		
 
 			//Reset shouting variable
 			yellingCounter = 15;
