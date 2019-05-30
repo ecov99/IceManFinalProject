@@ -80,9 +80,7 @@ int StudentWorld::move()
 	setDisplayText();
 
 	// Step 2) give each Actor a chance to do something
-	testProt_->doSomething();
 	IcemanPtr_->doSomething();
-	
 	
 	if (IcemanPtr_->isActive() == false)	// if iceman/player died
 	{
@@ -200,9 +198,8 @@ bool StudentWorld::hasIce(int x, int y)
 		for (int j = 0; j < 4; j++)
 		{
 			if (iceField_[x + i][y + j] != nullptr)
+			{	// has ice
 				temp = true;
-			else {
-				temp = false;
 				return temp;
 			}
 		}

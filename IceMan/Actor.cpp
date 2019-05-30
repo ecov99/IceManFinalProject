@@ -1027,7 +1027,7 @@ void RegularProtestor::doSomething()
 
 			return;
 		}
-		testLineOfSight();
+		//testLineOfSight();
 		//If Protestor is not trying to leave the oilField
 
 		//If protester is within radius of 4 and facing Iceman 
