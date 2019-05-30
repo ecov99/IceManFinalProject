@@ -310,33 +310,52 @@ public:
 	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 30, 30, left, 1, 0, health)
 	{
 		setVisible(true);
-		leaveOilFieldState_ = false;
-		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
 		level_ = level;
-		ticksToWaitBetweenMoves_ = max(0, 3 - level / 4);
-		yellingCounter = 15;
-		turningCounter = 200;
-		killedByBoulder = false;
-		killedByIceman = false;
+		restingCount_ = max(0, 3 - level / 4);
+		yellingCount_ = 15;
+		turningCount_ = 200;
+		numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
+
+		resting_ = false;
+		waitingToYell_ = false;
+		leaving_ = false;
+		killedByBoulder_ = false;
+		killedByIceman_ = false;
 	}
 
 	//behaviors
-	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	virtual void doSomething() {}
-	bool hasLineOfSight();
+	int updateMobilityCount(); //updates how many squares the protestor will move in a given direction
 	void genNewDirection();
+	bool checkForIcemanInRadius();
+	bool hasLineOfSight();
 	void testLineOfSight();
-	bool isFacing();
+	bool isFacingIceman();
+	void faceIceman();
+
+	bool isResting();
+	void setResting(bool b);
+	void resetRestingCount(int level);
+
+	bool isWaitingToYell();
+	void setWaitingToYell(bool b);
+	void resetWaitingToYellCount();
+
+	bool isLeaving();
+	void setLeaving(bool b);
 
 	// attributes
-	bool leaveOilFieldState_;
 	int numSquaresToMoveInCurrentDirection_;
-	int ticksToWaitBetweenMoves_;
 	int level_;
-	int yellingCounter;
-	int turningCounter;
-	bool killedByBoulder;
-	bool killedByIceman;
+	bool killedByBoulder_;
+	bool killedByIceman_;
+
+	bool resting_;
+	int restingCount_;
+	bool waitingToYell_;
+	int yellingCount_;
+	bool leaving_;
+	int turningCount_;
 };
 
 class RegularProtestor : public Protestor {

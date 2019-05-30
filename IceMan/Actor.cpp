@@ -722,6 +722,14 @@ int Protestor::updateMobilityCount()
 	return getWorld()->genRandNumber(8, 60);
 }
 
+bool Protestor::checkForIcemanInRadius()
+{
+	if (calcDistance(*getWorld()->IcemanPtr_) <= 4)
+		return true;
+	else
+		return false;
+}
+
 bool Protestor::hasLineOfSight()
 {
 
@@ -807,89 +815,12 @@ bool Protestor::hasLineOfSight()
 			return true;
 		}
 	}
-	//// calculate slope of line for each quadrant
-	//if (deltaX != 0) {
-	//	double m = (yI - yP) / (xI - xP);
-	//	if(m != 0)
-	//	{ 
-	//		// check every point along line for ice
-	//		// QUAD I
-	//		if (m > 0 && xP < xI) {
-	//			for (int x = 0; x <= deltaX; x++) {
-	//				int temp = m * x + yP;
-	//				if (getWorld()->iceField_[xP+x][temp] != nullptr)
-	//					return false;
-	//			}
-	//			return true;
-	//		}
-	//		// QUAD II
-	//		else if (m < 0 && xP > xI && deltaX < 0) {
-	//			for (int x = 0; x <= deltaX; x--) {
-	//				int temp = m * x + yP;
-	//				if (getWorld()->iceField_[xI + x][temp] != nullptr)
-	//					return false;
-	//			}
-	//			return true;
-	//		}
-	//		// QUAD III
-	//		else if (m > 0 && xP > xI && deltaX < 0) {
-	//			for (int x = 0; x <= deltaX; x--) {
-	//				int temp = m * x + yI;
-	//				if (getWorld()->iceField_[xI + x][temp] != nullptr)
-	//					return false;
-	//			}
-	//			return true;
-	//		}
-	//		// QUAD IV
-	//		else if (m < 0 && xP < xI && deltaX > 0) {
-	//			for (int x = 0; x < deltaX; x++) {
-	//				int temp = m * x + yI;
-	//				if (getWorld()->iceField_[xP + x][temp] != nullptr)
-	//					return false;
-	//			}
-	//			return true;
-	//		}
-	//	}
-	//	else // horizontal lines
-	//	{
-	//		// iceman is on the right
-	//		if (xI > xP) {
-	//			for (int x = xP; x <= xI; x++) {
-	//				if (getWorld()->iceField_[xP + x][yP] != nullptr)
-	//					return false;
-	//			}
-	//			return false;
-	//		}
-	//		// iceman is on the left
-	//		else if (xI < xP) {
-	//			for (int x = xI; x <= xP; x++) {
-	//				if (getWorld()->iceField_[xP + x][yP] != nullptr)
-	//					return false;
-	//			}
-	//			return true;
-	//		}
-	//	}
-	//}
-	//else // vertical lines
-	//{
-	//	// iceman is above
-	//	if (yP < yI) {
-	//		for (int y = 0; y <= (yI - yP); y++) {
-	//			if (getWorld()->iceField_[xP][yP + y] != nullptr)
-	//				return false;
-	//		}
-	//		return true;
-	//	}	
-	//	// iceman is below
-	//	else if (yP > yI) {
-	//		for (int y = 0; y <= (yP - yI); y++) {
-	//			if (getWorld()->iceField_[xP][yI + y] != nullptr)
-	//				return false;
-	//		}
-	//		return true;
-	//	}
-	//	
-	//}
+}
+
+void Protestor::testLineOfSight()
+{
+	if (hasLineOfSight() == true)
+		cout << "I HAVE LINE OF SIGHT!" << endl;
 }
 
 void Protestor::genNewDirection()
@@ -931,7 +862,7 @@ void Protestor::genNewDirection()
 			}
 			else
 			{
-				setDirection(down);
+setDirection(down);
 			}
 			break;
 		}
@@ -951,13 +882,47 @@ void Protestor::genNewDirection()
 
 }
 
-void Protestor::testLineOfSight()
+bool Protestor::isResting()
 {
-	if (hasLineOfSight() == true)
-		cout << "I HAVE LINE OF SIGHT!" << endl;
+	return resting_;
 }
 
-bool Protestor::isFacing()
+void Protestor::setResting(bool b)
+{
+	resting_ = b;
+}
+
+void Protestor::resetRestingCount(int level)
+{
+	restingCount_ = max(0, 3 - level / 4);
+}
+
+bool Protestor::isWaitingToYell()
+{
+	return waitingToYell_;
+}
+
+void Protestor::setWaitingToYell(bool b)
+{
+	waitingToYell_ = b;
+}
+
+void Protestor::resetWaitingToYellCount()
+{
+	yellingCount_ = 15;
+}
+
+bool Protestor::isLeaving()
+{
+	return leaving_;
+}
+
+void Protestor::setLeaving(bool b)
+{
+	leaving_ = b;
+}
+
+bool Protestor::isFacingIceman()
 {
 	int proDir = this->getDirection();
 	int iceX = getWorld()->IcemanPtr_->getX();
@@ -986,192 +951,107 @@ bool Protestor::isFacing()
 	return false;
 }
 
+void Protestor::faceIceman()
+{
+	// Iceman is above and in line of sight
+	if (getWorld()->IcemanPtr_->getY() > this->getY()
+		&& getWorld()->IcemanPtr_->getX() == this->getX())
+	{
+		this->setDirection(up);
+	}
+	// Iceman is below and in line of sight
+	else if (getWorld()->IcemanPtr_->getY() < this->getY()  
+		&& getWorld()->IcemanPtr_->getX() == this->getX())
+	{
+		this->setDirection(down);
+	}
+	// Iceman is to the left and in line of sight
+	else if (getWorld()->IcemanPtr_->getX() < this->getX()
+		&& getWorld()->IcemanPtr_->getY() == this->getY())
+	{
+		this->setDirection(left);
+	}
+	// Iceman is to the right and in line of sight
+	else if (getWorld()->IcemanPtr_->getX() > this->getX()
+		&& getWorld()->IcemanPtr_->getY() == this->getY())
+	{
+		this->setDirection(right);
+	}
+}
+
 void RegularProtestor::doSomething()
 {
-	ticksToWaitBetweenMoves_ = 0; //TESTING PURPOSES REMOVE AFTER TESTING
-
-	if (ticksToWaitBetweenMoves_ > 0)			// Protestor can not move
-		ticksToWaitBetweenMoves_--;
-	else if (ticksToWaitBetweenMoves_ == 0)		// Protestor can move
+	// Protestor is waiting to doSomething
+	if (isResting())
 	{
-		//*********************************************************
-		//	TEST BEGIN
-		//*********************************************************/
-		//int t;
-		//if (getWorld()->getKey(t) == true)
-		//{
-		//	// user pressed a key this tick
-		//	switch (t)
-		//	{
-		//	/******************************************
-		//		MOVE LEFT
-		//	******************************************/
-		//	case 'j':
-		//	case 'J':
-		//		// change direction
-		//		if (getDirection() != left)
-		//		{
-		//			setDirection(left);
-		//		}
-		//		// move
-		//		else
-		//		{
-		//			// if space is in bounds and no boulder
-		//			if (getX() > 0 && checkForBoulders(t))
-		//			{
-		//				moveTo(getX() - 1, getY());
-		//			}
-		//		}
-		//		break;
-		//	/******************************************
-		//		MOVE RIGHT
-		//	******************************************/
-		//	case 'l':
-		//	case 'L':
-		//		// change direction
-		//		if (getDirection() != right)
-		//		{
-		//			setDirection(right);
-		//		}
-		//		// move
-		//		else
-		//		{
-		//			// if space is in bounds and no boulder
-		//			if (getX() < 60 && checkForBoulders(t))
-		//			{
-		//				moveTo(getX() + 1, getY());
-		//			}
-		//		}
-		//		break;
-		//	/******************************************
-		//		MOVE DOWN
-		//	******************************************/
-		//	case 'k':
-		//	case 'K':
-		//		// change direction
-		//		if (getDirection() != down)
-		//		{
-		//			setDirection(down);
-		//		}
-		//		// move
-		//		else
-		//		{
-		//			// if space is in bounds and no boulder
-		//			if (getY() > 0 && checkForBoulders(t))
-		//			{
-		//				moveTo(getX(), getY() - 1);
-		//			}
-		//		}
-		//		break;
-		//	/******************************************
-		//		MOVE UP
-		//	******************************************/
-		//	case 'i':
-		//	case 'I':
-		//		// change direction
-		//		if (getDirection() != up)
-		//		{
-		//			setDirection(up);
-		//		}
-		//		// move
-		//		else
-		//		{
-		//			// if space is in bounds and no boulder
-		//			if (getY() < 60 && checkForBoulders(t))
-		//			{
-		//				moveTo(getX(), getY() + 1);
-		//			}
-		//		}
-		//		break;
-		//	}
-		//}
-		//*********************************************************
-		//	TEST END
-		//*********************************************************/
-
-		//To ensure protestor only speaks once
-		if (getHealth() <= 0 && (killedByBoulder == false || killedByIceman == false))
-		{
-			leaveOilFieldState_ = true;
-			getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-		}
-		if (leaveOilFieldState_ == true)// wants to leave the oilField by beeing annoyed
-		{
-			if (calcDistance(60, 60) <= 1)//If Protestor reaches exit
-			{
-				setActive(false);
-			}
-			//Cannot be quirted or bonked
-
-			//Play sound SOUND_PROTESTOR_GIVE_UP
-			//resting tick set to zero so it never rests
-
-			//If bonked by boulder increaseScore(500)
-			//If annoyed by squirted increaseScore(100)
-
-			//Find shortest path to exit
-
-			//Moves towards exit
-
-			return;
-		}
-		//If Protestor is not trying to leave the oilField
-		yellingCounter--;
-		//If protester is within radius of 4 and facing Iceman 
-		//and has not shouted within the last 15 nonresting tick
-		if (calcDistance(*getWorld()->IcemanPtr_) <= 4 && isFacing() && yellingCounter <= 0)
-		{
-			//Shout at Iceman
-			getWorld()->playSound(SOUND_PROTESTER_YELL);
-
-			//Annoy Iceman by deducting 2 health points
-			//getWorld()->IcemanPtr_->decreaseHealth(2);
-		
-
-			//Reset shouting variable
-			yellingCounter = 15;
-		}
-		//else if protestor is within vertical or horizontal line of sight of Iceman
-		//and is more than 4 radius away
-		else if (hasLineOfSight() && calcDistance(getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY()) >= 4)
-		{
-			////Change direction facing Iceman and move one step towards Iceman
-			//if (getWorld()->IcemanPtr_->getDirection() != getDirection())
-			//{
-			//	setDirection(getWorld()->IcemanPtr_->getDirection());
-			//}
-			//set numSquaresToMoveinCurrentDirecton to zero, forcing to pick a new direction during its
-			//next non-resting tick, unless Protestor still sees Iceman then will continue to move towards Iceman
-			numSquaresToMoveInCurrentDirection_ = 0;
-			//then return
-			return;
-		}
-
-		//If the Protestor can not see Iceman then
-		else if (hasLineOfSight() == false)
-		{
-			numSquaresToMoveInCurrentDirection_--;
-			if (numSquaresToMoveInCurrentDirection_ <= 0)
-			{
-				//Protestor will pick a random direction
-			}
-		}
-		//If Protestor can move in that direction, move numSquaresToMoveInCurrentDirection
-		//else choose new direction
-
-
-		//If Protestor is sitting at an intersection and 
-		//made a perpendicular turn in 200 non-resting ticks
-		//then pick viable route is multiple viable routes exist pick one direction randomly
-		//new numSquaresToMoveInCurrentDirection values
-
-
-
-
-
-		//At the end of each movement reset ticksToWaitBetweenMoves
-		ticksToWaitBetweenMoves_ = updateMobilityCount();
+		restingCount_--;
+		if (restingCount_ <= 0)
+			setResting(false);
 	}
+	// Protestor is leaving oil field
+	else if (isLeaving() == true)
+	{
+		if (calcDistance(60, 60) <= 1) // Protestor is at the exit
+			setActive(false);
+		else
+		{
+			// find shortest path
+			// move towards it
+		}
+	}
+	// Protestor is trying to shout
+	else if (checkForIcemanInRadius() == true && isFacingIceman())
+	{
+		if (isWaitingToYell())	// if I recently shouted
+		{
+			yellingCount_--;	// wait
+			if (yellingCount_ <= 0)
+				setWaitingToYell(false);	// dont wait anymore
+		}
+		else	// shout at Iceman
+		{
+			getWorld()->playSound(SOUND_PROTESTER_YELL);
+			// decrement Iceman life
+			setWaitingToYell(true);
+			resetWaitingToYellCount();
+		}
+	}
+	// Protestor is changing directions to face Iceman
+	else if (checkForIcemanInRadius() == false && hasLineOfSight())
+	{
+		// change directions to face Iceman
+		faceIceman();
+		// take one step towards him
+		/************************************************
+			set numSquaresToMoveInCurrentDirection = 0
+				unless Protestor still hasLineOfSight()
+				he will still move towards Iceman
+		************************************************/
+	}
+	// Protestor is moving around randomly
+	else if (hasLineOfSight() == false)
+	{
+		numSquaresToMoveInCurrentDirection_--;
+		if (numSquaresToMoveInCurrentDirection_ <= 0)
+		{
+			// Protestor will pick a new random direction
+		}
+		// If Protestor can move in that direction,
+				// move
+		// Else
+				// Protestor will pick a new random direction
+
+	}
+	/**********************************
+		PLACE AFTER MOVE FUNCTION
+		resetRestingCount(level_);
+	**********************************/
+	
+
+	//If Protestor is sitting at an intersection and 
+	//made a perpendicular turn in 200 non-resting ticks
+	//then pick viable route is multiple viable routes exist pick one direction randomly
+	//new numSquaresToMoveInCurrentDirection values
 }
 
 void HardcoreProtestor::doSomething()
