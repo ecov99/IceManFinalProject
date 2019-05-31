@@ -146,12 +146,25 @@ void Boulder::doSomething() {
 		int tempID = -1;	// initialize tempID to dummy value
 
 		// pass tempID by reference in order to update value
-		if (checkCollision(tempID) == true) {	// if collided with active Actor
+		Actor* temp = checkCollision(tempID);
+		if (temp != nullptr) {	// if collided with active Actor
 			
-			if (tempID == IID_PLAYER)		// if collided with ICEMAN
-				getWorld()->IcemanPtr_->annoyed(this->getID());
-				
-			setCollided(true);
+			// if collided with ICEMAN
+			if (tempID == IID_PLAYER)		
+				getWorld()->takeDamage(*this, *temp);
+	
+			// if collided with REGULAR PROTESTOR
+			else if (tempID == IID_PROTESTER)
+				getWorld()->takeDamage(*this, *temp);
+
+			// if collided with HC PROTESTOR
+			else if (tempID == IID_PROTESTER)
+				getWorld()->takeDamage(*this, *temp);
+
+			/************************************************
+			DELETED: setCollided(true);
+				Boulder is allowed to fall through objects
+			************************************************/
 		}
 
 		// if no ice, then move
@@ -201,7 +214,7 @@ bool Boulder::checkForIceBelow() {
 	else
 		return true;
 }
-bool Boulder::checkCollision(int &victimID) {
+Actor* Boulder::checkCollision(int &victimID) {
 	// loop through active Actors
 	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
 		// if Actor is Iceman or a Protestor
@@ -215,11 +228,12 @@ bool Boulder::checkCollision(int &victimID) {
 				getX() - 4 < getWorld()->currentActors[i]->getX())
 			{
 				victimID = getWorld()->currentActors[i]->getID();
-				return true;
+				Actor* temp = getWorld()->currentActors[i];
+				return temp;
 			}
 		}
 	}
-	return false;
+	return nullptr;
 }
 
 
@@ -398,6 +412,11 @@ void Character::incGold() {
 }
 void Character::decGold() {
 	numOfGold_--;
+}
+
+void Character::decreaseHealth(unsigned int h)
+{
+	health_ -= h;
 }
 
 
@@ -825,57 +844,64 @@ void Protestor::testLineOfSight()
 
 void Protestor::genNewDirection()
 {
+	int tempUP = 1;
+	int tempDOWN = 2;
+	int tempLEFT = 3;
+	int tempRIGHT = 4;
+
+	int oldDirection;
+	Direction tempDirection = getDirection();
+	switch (tempDirection)
+	{
+		case up:
+		{
+			oldDirection = tempUP;
+			break;
+		}
+		case down:
+		{
+			oldDirection = tempDOWN;
+			break;
+		}
+		case left:
+		{
+			oldDirection = tempLEFT;
+			break;
+		}
+		case right:
+		{
+			oldDirection = tempRIGHT;
+			break;
+		}
+
+	}
+	
 	int newDirection = getWorld()->genRandNumber(1, 4);
-	int oldDirection = getDirection();
+	while (newDirection == oldDirection) {
+		newDirection = getWorld()->genRandNumber(1, 4);
+	}
+	
 
 	switch (newDirection)
 	{
 		case 1:
 		{
-			if (oldDirection != newDirection)
-			{
-				setDirection(left);
-			}
-			else
-			{
-				setDirection(right);
-			}
+			setDirection(up);
 			break;
 		}
 		case 2:
 		{
-			if (oldDirection != newDirection)
-			{
-				setDirection(right);
-			}
-			else
-			{
-				setDirection(left);
-			}
+			setDirection(down);
 			break;
 		}
 		case 3:
 		{
-			if (oldDirection != newDirection)
-			{
-				setDirection(up);
-			}
-			else
-			{
-setDirection(down);
-			}
+			setDirection(left);
 			break;
 		}
 		case 4:
 		{
-			if (oldDirection != newDirection)
-			{
-				setDirection(down);
-			}
-			else
-			{
-				setDirection(up);
-			}
+			setDirection(right);
 			break;
 		}
 	}
@@ -1059,36 +1085,44 @@ bool Protestor::isFacingIceman()
 	return false;
 }
 
-void Protestor::faceIceman()
+void Protestor::faceIcemanAndMove()
 {
 	// Iceman is above and in line of sight
 	if (getWorld()->IcemanPtr_->getY() > this->getY()
 		&& getWorld()->IcemanPtr_->getX() == this->getX())
 	{
 		this->setDirection(up);
+		moveTo(getX(), getY() + 1);
 	}
 	// Iceman is below and in line of sight
 	else if (getWorld()->IcemanPtr_->getY() < this->getY()  
 		&& getWorld()->IcemanPtr_->getX() == this->getX())
 	{
 		this->setDirection(down);
+		moveTo(getX(), getY() - 1);
 	}
 	// Iceman is to the left and in line of sight
 	else if (getWorld()->IcemanPtr_->getX() < this->getX()
 		&& getWorld()->IcemanPtr_->getY() == this->getY())
 	{
 		this->setDirection(left);
+		moveTo(getX() - 1, getY());
 	}
 	// Iceman is to the right and in line of sight
 	else if (getWorld()->IcemanPtr_->getX() > this->getX()
 		&& getWorld()->IcemanPtr_->getY() == this->getY())
 	{
 		this->setDirection(right);
+		moveTo(getX() + 1, getY());
 	}
 }
 
 void RegularProtestor::doSomething()
 {
+	// Check protestors health
+	if (health_ <= 0)
+		setLeaving(true);
+
 	// Protestor is waiting to doSomething
 	if (isResting())
 	{
@@ -1099,6 +1133,9 @@ void RegularProtestor::doSomething()
 	// Protestor is leaving oil field
 	else if (isLeaving() == true)
 	{
+		// TEST: until shortest path is determined
+		setActive(false);
+
 		if (calcDistance(60, 60) <= 1) // Protestor is at the exit
 			setActive(false);
 		else
@@ -1119,22 +1156,25 @@ void RegularProtestor::doSomething()
 		else	// shout at Iceman
 		{
 			getWorld()->playSound(SOUND_PROTESTER_YELL);
-			// decrement Iceman life
+			getWorld()->takeDamage(*this, *getWorld()->IcemanPtr_);
 			setWaitingToYell(true);
 			resetWaitingToYellCount();
 		}
 	}
-	// Protestor is changing directions to face Iceman
+	// Protestor walks towards Iceman he has line of sight
 	else if (checkForIcemanInRadius() == false && hasLineOfSight())
 	{
-		// change directions to face Iceman
-		faceIceman();
-		// take one step towards him
+		// face and move towards Iceman one space
+		faceIcemanAndMove();
+		resetRestingCount(level_);
+		setResting(true);
+
 		/************************************************
 			set numSquaresToMoveInCurrentDirection = 0
 				unless Protestor still hasLineOfSight()
 				he will still move towards Iceman
 		************************************************/
+		numSquaresToMoveInCurrentDirection_ = 0;
 	}
 	// Protestor is moving around randomly
 	else if (hasLineOfSight() == false)
@@ -1142,12 +1182,37 @@ void RegularProtestor::doSomething()
 		numSquaresToMoveInCurrentDirection_--;
 		if (numSquaresToMoveInCurrentDirection_ <= 0)
 		{
-			// Protestor will pick a new random direction
+			genNewDirection();
 		}
-		// If Protestor can move in that direction,
-				// move
-		// Else
-				// Protestor will pick a new random direction
+
+		// check to move if protestor is facing up
+		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 4) == false
+			&& checkForBoulders(getDirection()) == false)
+		{
+			moveTo(getX(), getY() + 1);
+		}
+		// check to move if protestor is facing down
+		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 4) == false
+			&& checkForBoulders(getDirection()) == false)
+		{
+			moveTo(getX(), getY() - 1);
+		}
+		// check to move if protestor is facing left
+		else if (getDirection() == left && getWorld()->hasIce(getX() - 4, getY()) == false
+			&& checkForBoulders(getDirection()) == false)
+		{
+			moveTo(getX() - 1, getY());
+		}
+		// check to move if protestor is facing right
+		else if (getDirection() == left && getWorld()->hasIce(getX() + 4, getY()) == false
+			&& checkForBoulders(getDirection()) == false)
+		{
+			moveTo(getX() + 1, getY());
+		}
+		else
+		{
+			genNewDirection();
+		}
 
 	}
 	/**********************************

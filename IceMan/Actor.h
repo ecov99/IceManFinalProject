@@ -96,7 +96,7 @@ public:
 	bool hasCollided();
 	void setCollided(bool b);
 	bool checkForIceBelow();
-	bool checkCollision(int &victimID);
+	Actor* checkCollision(int &victimID);
 
 private:
 	// attributes
@@ -264,6 +264,7 @@ public:
 	bool hasDied();
 	void incGold();
 	void decGold();
+	void decreaseHealth(unsigned int h);
 
 	// attributes
 	int health_;
@@ -332,7 +333,7 @@ public:
 	bool hasLineOfSight();
 	void testLineOfSight();
 	bool isFacingIceman();
-	void faceIceman();
+	void faceIcemanAndMove();
 
 	bool isResting();
 	void setResting(bool b);
