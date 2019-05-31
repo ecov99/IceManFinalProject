@@ -331,13 +331,15 @@ void Squirt::setMoving(bool b) {
 
 Actor* Squirt::checkForProtestors(int dir, int &tempID)
 {
-	double temp;
+	double temp = 0.0;
 
 	// loop through current actors vector
 	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
 
 		// check only boulders
-		if (getWorld()->currentActors[i]->getID() == (IID_PROTESTER || IID_HARD_CORE_PROTESTER)) {
+		if (getWorld()->currentActors[i]->getID() == IID_PROTESTER
+			|| getWorld()->currentActors[i]->getID() == IID_HARD_CORE_PROTESTER)
+		{
 
 			// check distance Actor is from each boulder
 			temp = calcDistance(*getWorld()->currentActors[i]);
@@ -454,14 +456,17 @@ void Gold::doSomething()
 					setActive(false);
 					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 					
-					Protestor* tempChar = static_cast<Protestor*>(getWorld()->currentActors[i]);
-					if(tempChar->getID() == IID_PROTESTER)
+					
+					if(getWorld()->currentActors[i]->getID() == IID_PROTESTER)
 					{ 
-						tempChar->setLeaving(true);
+						Protestor* tempProt = static_cast<Protestor*>(getWorld()->currentActors[i]);
+						tempProt->setLeaving(true);
 						getWorld()->increaseScore(25);
 					}
-					else if (tempChar->getID() == IID_HARD_CORE_PROTESTER)
+					else if (getWorld()->currentActors[i]->getID() == IID_HARD_CORE_PROTESTER)
 					{
+						HardcoreProtestor* tempPro = static_cast<HardcoreProtestor*>(getWorld()->currentActors[i]);
+						tempPro->setStaringAtGold(true);
 						getWorld()->increaseScore(50);
 					}
 
@@ -525,11 +530,16 @@ int Character::getHealth() {
 int Character::getNumOfGold() {
 	return numOfGold_;
 }
-bool Character::hasDied() {
-	if (health_ <= 0)
+bool Character::hasDied()
+{
+	if (dead_ == true)
 		return true;
 	else
 		return false;
+}
+void Character::setHasDied(bool b)
+{
+	dead_ = true;
 }
 void Character::incGold() {
 	numOfGold_++;
@@ -541,6 +551,8 @@ void Character::decGold() {
 void Character::decreaseHealth(unsigned int h)
 {
 	health_ -= h;
+	if (health_ <= 0)
+		setHasDied(true);
 }
 
 
@@ -880,7 +892,6 @@ bool Protestor::hasLineOfSight()
 	int yP = this->getY();
 	int xI = getWorld()->IcemanPtr_->getX();
 	int yI = getWorld()->IcemanPtr_->getY();
-	double deltaX = xI - xP;
 
 	// Iceman is on same horizontal line as Protestor
 	if (yP == yI)
@@ -968,6 +979,7 @@ bool Protestor::hasLineOfSight()
 			return true;
 		}
 	}
+	return false;
 }
 
 void Protestor::testLineOfSight()
@@ -1082,6 +1094,21 @@ void Protestor::setLeaving(bool b)
 	leaving_ = b;
 }
 
+bool Protestor::isWaitingToTurn()
+{
+	return waitingToTurn_;
+}
+
+void Protestor::setWaitingToTurn(bool b)
+{
+	waitingToTurn_ = b;
+}
+
+void Protestor::resetWaitingToTurn()
+{
+	waitingToTurn_ = 200;
+}
+
 void Protestor::isStunned()
 {
 	int l = getWorld()->getLevel();
@@ -1151,10 +1178,7 @@ void Protestor::faceIcemanAndMove()
 
 void RegularProtestor::doSomething()
 {
-	//// TEST
-	//cout << "Health: " << health_ << endl;
-
-	// Check protestors health
+	// 1: Check protestors health
 	if (health_ <= 0 && isLeaving() == false)
 	{
 		getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
@@ -1162,7 +1186,7 @@ void RegularProtestor::doSomething()
 		setResting(false);
 		resetRestingCount(level_);
 	}
-	// Protestor is waiting to doSomething
+	// 2: Protestor is waiting to doSomething
 	if (isResting())
 	{
 		restingCount_--;
@@ -1172,9 +1196,8 @@ void RegularProtestor::doSomething()
 			resetRestingCount(level_);
 		}
 		return;
-		//cout << "RESTING" << endl;
 	}
-	// Protestor is leaving oil field
+	// 3: Protestor is leaving oil field
 	if (isLeaving() == true)
 	{
 		// TEST: until shortest path is determined
@@ -1189,10 +1212,8 @@ void RegularProtestor::doSomething()
 			// find shortest path
 			// move towards it
 		}
-
-		//cout << "LEAVING" << endl;
 	}
-	// Protestor is trying to shout
+	// 4: Protestor is trying to shout
 	else if (checkForIcemanInRadius() == true && isFacingIceman())
 	{
 		if (isWaitingToYell())	// if I recently shouted
@@ -1208,10 +1229,9 @@ void RegularProtestor::doSomething()
 			setWaitingToYell(true);
 			resetWaitingToYellCount();
 		}
-
-		//cout << "YELLING" << endl;
+		return;
 	}
-	// Protestor walks towards Iceman he has line of sight
+	// 5: Protestor walks towards Iceman if he has line of sight
 	else if (checkForIcemanInRadius() == false && hasLineOfSight() == true)	// > 4 away && hasLineOfSight
 	{
 		// face and move towards Iceman one space
@@ -1219,81 +1239,129 @@ void RegularProtestor::doSomething()
 		resetRestingCount(level_);
 		setResting(true);
 
-		/************************************************
-			set numSquaresToMoveInCurrentDirection = 0
-				unless Protestor still hasLineOfSight()
-				he will still move towards Iceman
-		************************************************/
+		// force Protestor to pick new direction (if he loses line of sight)
 		numSquaresToMoveInCurrentDirection_ = 0;
-		//cout << "FACING ICEMAN" << endl;
+		return;
 	}
-	// Protestor needs new direction
-	else
+	// 6: Protestor cant see Iceman
+	else if (hasLineOfSight() == false)
 	{	
 		numSquaresToMoveInCurrentDirection_--;
 		if (numSquaresToMoveInCurrentDirection_ <= 0)
 		{
+			// generate new direction
 			genNewDirection();
+
+			// check to see if new direction is okay, otherwise generate new direction
+			if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 4) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 4) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == left && getWorld()->hasIce(getX() - 4, getY()) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == left && getWorld()->hasIce(getX() + 4, getY()) == true)
+			{
+				genNewDirection();
+			}
+
+			// change how many spaces to move
 			numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
-			return;
+		}
+		// 8: Move protestor numSquaresToMoveInCurrentDirection_
+		else	// still doesn't have line of sight but number of squares to move > 0
+		{
+			// check to move if protestor is facing up
+			if (getDirection() == up && getY() < 60 && getWorld()->hasIce(getX(), getY() + 1) == false)
+			{
+				// if facing top boundary
+				if (getY() + 1 == 60)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX(), getY() + 1);
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing down
+			else if (getDirection() == down && getY() > 0 && getWorld()->hasIce(getX(), getY() - 1) == false)
+			{
+				// if facing bottom boundary
+				if (getY() - 1 == 0)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX(), getY() - 1);
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing left
+			else if (getDirection() == left && getX() > 0 && getWorld()->hasIce(getX() - 1, getY()) == false)
+			{
+				// if facing left boundary
+				if (getX() - 1 == 0)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX() - 1, getY());
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing right
+			else if (getDirection() == right && getX() < 60 && getWorld()->hasIce(getX() + 1, getY()) == false)
+			{
+				// if facing right boundary
+				if (getX() + 1 == 60)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX() + 1, getY());
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// force protestor to get a new direction if can't move in current direction
+			else
+			{
+				numSquaresToMoveInCurrentDirection_ = 0;
+			}
 		}
 
-		// check to move if protestor is facing up
-		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 1) == false
-			&& getY() < 60)
-		{
-			moveTo(getX(), getY() + 1);
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing down
-		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 1) == false
-			&& getY() > 0)
-		{
-			moveTo(getX(), getY() - 1);
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing left
-		else if (getDirection() == left && getWorld()->hasIce(getX() - 1, getY()) == false
-			&& getX() > 0)
-		{
-			moveTo(getX() - 1, getY());
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing right
-		else if (getDirection() == left && getWorld()->hasIce(getX() + 1, getY()) == false
-			&& getX() < 60)
-		{
-			moveTo(getX() + 1, getY());
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		else
-		{
-			genNewDirection();
-		}
-		//cout << "MOVE RANDOMLY" << endl;
 	}
-	/**********************************
-		PLACE AFTER MOVE FUNCTION
-		resetRestingCount(level_);
-	**********************************/
-	
+	// 9: force Protestor to get a new direction if all else fails
+	else
+	{
+		numSquaresToMoveInCurrentDirection_ = 0;
+	}
 
-	//If Protestor is sitting at an intersection and 
-	//made a perpendicular turn in 200 non-resting ticks
-	//then pick viable route is multiple viable routes exist pick one direction randomly
-	//new numSquaresToMoveInCurrentDirection values
+	/***********************************************************
+		Step 7
+		If Protestor is sitting at an intersection and 
+		made a perpendicular turn in 200 non-resting ticks
+		then pick viable route is multiple viable routes exist,
+		pick one direction randomly
+		new numSquaresToMoveInCurrentDirection values
+	***********************************************************/
 }
 
 void HardcoreProtestor::doSomething()
 {
-	//// TEST
-//cout << "Health: " << health_ << endl;
-
-// Check protestors health
+	// 1: Check protestors health
 	if (health_ <= 0 && isLeaving() == false)
 	{
 		getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
@@ -1301,8 +1369,8 @@ void HardcoreProtestor::doSomething()
 		setResting(false);
 		resetRestingCount(level_);
 	}
-	// Protestor is waiting to doSomething
-	if (isResting() && isStaringAtGold() == false)
+	// 2: Protestor is waiting to doSomething
+	if (isResting() == true)
 	{
 		restingCount_--;
 		if (restingCount_ <= 0)
@@ -1311,10 +1379,9 @@ void HardcoreProtestor::doSomething()
 			resetRestingCount(level_);
 		}
 		return;
-		//cout << "RESTING" << endl;
 	}
-	// Protestor is staring at gold
-	if (isStaringAtGold() && isLeaving() == false)
+	// Protestor is staring at Gold
+	if (isStaringAtGold() == true && isResting() == false)
 	{
 		ticksToStare_--;
 		if (ticksToStare_ <= 0)
@@ -1322,8 +1389,9 @@ void HardcoreProtestor::doSomething()
 			setStaringAtGold(false);
 			resetTicksToStare(level_);
 		}
+		return;
 	}
-	// Protestor is leaving oil field
+	// 3: Protestor is leaving oil field
 	if (isLeaving() == true)
 	{
 		// TEST: until shortest path is determined
@@ -1338,10 +1406,8 @@ void HardcoreProtestor::doSomething()
 			// find shortest path
 			// move towards it
 		}
-
-		//cout << "LEAVING" << endl;
 	}
-	// Protestor is trying to shout
+	// 4: Protestor is trying to shout
 	else if (checkForIcemanInRadius() == true && isFacingIceman())
 	{
 		if (isWaitingToYell())	// if I recently shouted
@@ -1357,10 +1423,9 @@ void HardcoreProtestor::doSomething()
 			setWaitingToYell(true);
 			resetWaitingToYellCount();
 		}
-
-		//cout << "YELLING" << endl;
+		return;
 	}
-	// Protestor walks towards Iceman he has line of sight
+	// 5: Protestor walks towards Iceman if he has line of sight
 	else if (checkForIcemanInRadius() == false && hasLineOfSight() == true)	// > 4 away && hasLineOfSight
 	{
 		// face and move towards Iceman one space
@@ -1368,73 +1433,124 @@ void HardcoreProtestor::doSomething()
 		resetRestingCount(level_);
 		setResting(true);
 
-		/************************************************
-			set numSquaresToMoveInCurrentDirection = 0
-				unless Protestor still hasLineOfSight()
-				he will still move towards Iceman
-		************************************************/
+		// force Protestor to pick new direction (if he loses line of sight)
 		numSquaresToMoveInCurrentDirection_ = 0;
-		//cout << "FACING ICEMAN" << endl;
+		return;
 	}
-	// Protestor needs new direction
-	else
+	// 6: Protestor cant see Iceman
+	else if (hasLineOfSight() == false)
 	{
 		numSquaresToMoveInCurrentDirection_--;
 		if (numSquaresToMoveInCurrentDirection_ <= 0)
 		{
+			// generate new direction
 			genNewDirection();
+
+			// check to see if new direction is okay, otherwise generate new direction
+			if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 4) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 4) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == left && getWorld()->hasIce(getX() - 4, getY()) == true)
+			{
+				genNewDirection();
+			}
+			// check to see if new direction is okay, otherwise generate new direction
+			else if (getDirection() == left && getWorld()->hasIce(getX() + 4, getY()) == true)
+			{
+				genNewDirection();
+			}
+
+			// change how many spaces to move
 			numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
-			return;
+		}
+		// 8: Move protestor numSquaresToMoveInCurrentDirection_
+		else	// still doesn't have line of sight but number of squares to move > 0
+		{
+			// check to move if protestor is facing up
+			if (getDirection() == up && getY() < 60 && getWorld()->hasIce(getX(), getY() + 1) == false)
+			{
+				// if facing top boundary
+				if (getY() + 1 == 60)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX(), getY() + 1);
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing down
+			else if (getDirection() == down && getY() > 0 && getWorld()->hasIce(getX(), getY() - 1) == false)
+			{
+				// if facing bottom boundary
+				if (getY() - 1 == 0)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX(), getY() - 1);
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing left
+			else if (getDirection() == left && getX() > 0 && getWorld()->hasIce(getX() - 1, getY()) == false)
+			{
+				// if facing left boundary
+				if (getX() - 1 == 0)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX() - 1, getY());
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// check to move if protestor is facing right
+			else if (getDirection() == right && getX() < 60 && getWorld()->hasIce(getX() + 1, getY()) == false)
+			{
+				// if facing right boundary
+				if (getX() + 1 == 60)
+					numSquaresToMoveInCurrentDirection_ = 0;
+				else
+				{
+					moveTo(getX() + 1, getY());
+					numSquaresToMoveInCurrentDirection_--;
+					resetRestingCount(level_);
+					setResting(true);
+				}
+			}
+			// force protestor to get a new direction if can't move in current direction
+			else
+			{
+				numSquaresToMoveInCurrentDirection_ = 0;
+			}
 		}
 
-		// check to move if protestor is facing up
-		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 1) == false
-			&& getY() < 60)
-		{
-			moveTo(getX(), getY() + 1);
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing down
-		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 1) == false
-			&& getY() > 0)
-		{
-			moveTo(getX(), getY() - 1);
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing left
-		else if (getDirection() == left && getWorld()->hasIce(getX() - 1, getY()) == false
-			&& getX() > 0)
-		{
-			moveTo(getX() - 1, getY());
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		// check to move if protestor is facing right
-		else if (getDirection() == left && getWorld()->hasIce(getX() + 1, getY()) == false
-			&& getX() < 60)
-		{
-			moveTo(getX() + 1, getY());
-			resetRestingCount(level_);
-			setResting(true);
-		}
-		else
-		{
-			genNewDirection();
-		}
-		//cout << "MOVE RANDOMLY" << endl;
 	}
-	/**********************************
-		PLACE AFTER MOVE FUNCTION
-		resetRestingCount(level_);
-	**********************************/
+	// 9: force Protestor to get a new direction if all else fails
+	else
+	{
+		numSquaresToMoveInCurrentDirection_ = 0;
+	}
 
-
-	//If Protestor is sitting at an intersection and 
-	//made a perpendicular turn in 200 non-resting ticks
-	//then pick viable route is multiple viable routes exist pick one direction randomly
-	//new numSquaresToMoveInCurrentDirection values
+	/***********************************************************
+		Step 7
+		If Protestor is sitting at an intersection and
+		made a perpendicular turn in 200 non-resting ticks
+		then pick viable route is multiple viable routes exist,
+		pick one direction randomly
+		new numSquaresToMoveInCurrentDirection values
+	***********************************************************/
 }
 
 bool HardcoreProtestor::isStaringAtGold()

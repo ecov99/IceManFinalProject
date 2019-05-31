@@ -253,6 +253,7 @@ public:
 		health_ = h;
 		numOfGold_ = 0;
 		annoyed_ = false;
+		dead_ = false;
 	}
 	virtual ~Character() {}
 
@@ -263,12 +264,14 @@ public:
 	int getHealth();
 	int getNumOfGold();
 	bool hasDied();
+	void setHasDied(bool b);
 	void incGold();
 	void decGold();
 	void decreaseHealth(unsigned int h);
 
 	// attributes
 	int health_;
+	bool dead_;
 private:
 	int numOfGold_;
 	bool annoyed_;
@@ -321,6 +324,7 @@ public:
 
 		resting_ = false;
 		waitingToYell_ = false;
+		waitingToTurn_ = false;
 		leaving_ = false;
 		killedByBoulder_ = false;
 		killedByIceman_ = false;
@@ -343,6 +347,9 @@ public:
 	void resetWaitingToYellCount();
 	bool isLeaving();
 	void setLeaving(bool b);
+	bool isWaitingToTurn();
+	void setWaitingToTurn(bool b);
+	void resetWaitingToTurn();
 	void isStunned();
 
 	// attributes
@@ -356,6 +363,7 @@ public:
 	bool waitingToYell_;
 	int yellingCount_;
 	bool leaving_;
+	bool waitingToTurn_;
 	int turningCount_;
 };
 

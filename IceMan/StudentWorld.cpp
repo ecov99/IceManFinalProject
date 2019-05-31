@@ -60,7 +60,7 @@ int StudentWorld::init()
 		}
 	}
 
-	int level = getLevel() + 1;
+	int level = getLevel();
 	genNumOfRandomActors(level);
 	timeSinceLastProtestorAdd_ = 0;
 	numberOfProtestors_ = 0;
@@ -102,7 +102,7 @@ int StudentWorld::move()
 		}
 	}
 
-	int level = getLevel() + 1;
+	int level = getLevel();
 
 	// Step 3) populate random Actors
 	populateGoodies(level);
@@ -182,13 +182,14 @@ void StudentWorld::takeDamage(Actor &culprit, Actor &victim)
 	for (int i = 0; i < currentActors.size(); i++)
 	{
 		// if victim is Regular Protestor and within range of the culprit
-		if (victim.getID() == IID_PROTESTER && culprit.calcDistance(victim) <= 4)
+		if (victim.getID() == IID_PROTESTER && culprit.calcDistance(victim) <= 7)
 		{
 			// if culprit is Boulder
 			if (culprit.getID() == IID_BOULDER)
 			{
 				Character* tempChar = (Character*)(&victim);
 				tempChar->decreaseHealth(10);
+				increaseScore(500);
 				break;
 			}
 				
@@ -197,27 +198,34 @@ void StudentWorld::takeDamage(Actor &culprit, Actor &victim)
 			{
 				Protestor* tempPro = (Protestor*)(&victim);
 				tempPro->decreaseHealth(2);
-				tempPro->isStunned();
+				if (tempPro->hasDied() == true)
+					increaseScore(100);
+				else
+					tempPro->isStunned();
 				break;
 			}
 		}
 		// if victim is HC Protestor and within range of the culprit
-		else if (victim.getID() == IID_HARD_CORE_PROTESTER && culprit.calcDistance(victim) <= 4)
+		else if (victim.getID() == IID_HARD_CORE_PROTESTER && culprit.calcDistance(victim) <= 7)
 		{
 			// if culprit is Boulder
 			if (culprit.getID() == IID_BOULDER)
 			{
 				Character* tempChar = (Character*)(&victim);
 				tempChar->decreaseHealth(10);
+				increaseScore(500);
 				break;
 			}
 
 			// if culprit is Squirt
 			else if (culprit.getID() == IID_WATER_SPURT)
 			{
-				Protestor* tempPro = (Protestor*)(&victim);
+				HardcoreProtestor* tempPro = (HardcoreProtestor*)(&victim);
 				tempPro->decreaseHealth(2);
-				tempPro->isStunned();
+				if (tempPro->hasDied() == true)
+					increaseScore(250);
+				else
+					tempPro->isStunned();
 				break;
 			}
 
@@ -275,19 +283,17 @@ bool StudentWorld::noNeighbors(int x, int y)
 
 bool StudentWorld::hasIce(int x, int y)
 {
-	bool temp = false;
+
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
 			if (iceField_[x + i][y + j] != nullptr)
-			{	// has ice
-				temp = true;
-				return temp;
-			}
+				return true;	// has ice
+	
 		}
 	}
-	return temp;
+	return false;
 }
 
 void StudentWorld::genNumOfRandomActors(int l)
