@@ -922,6 +922,114 @@ void Protestor::setLeaving(bool b)
 	leaving_ = b;
 }
 
+bool Protestor::findNearestPath(int startX, int startY, int finalX, int finalY, Direction & finalDir, int & steps)
+{
+	struct Point {
+		Point(int x, int y) : m_x(x), m_y(y) {}
+		int m_x;
+		int m_y;
+	};
+
+	int stepsArray[64][64];
+	bool rv = false;
+	for (int i = 0; i != 64; i++)
+		for (int j = 0; j != 64; j++)
+			stepsArray[i][j] = 9999;
+	std::queue<Point> exitPath;
+
+	exitPath.push(Point(startX, startY));
+	stepsArray[startX][startY] = 0;
+
+	int curSteps;
+
+	while (!exitPath.empty())
+	{
+		int curX = exitPath.front().m_x;
+		int curY = exitPath.front().m_y;
+		exitPath.pop();
+
+		if (curX == finalX && curY == finalY)
+			rv = true;
+
+		curSteps = stepsArray[curX][curY];
+		curSteps++;
+
+
+
+		if (curX < 60 && getWorld()->noNeighbors(curX + 1, curY) && 
+		   !getWorld()->hasIce(curX, curY + 4) && stepsArray[curX + 1][curY] == 9999)
+		{
+			exitPath.push(Point(curX + 1, curY));
+			stepsArray[curX + 1][curY] = curSteps;
+		}
+
+		if (curX > 1 && getWorld()->noNeighbors(curX - 1, curY) && stepsArray[curX - 1][curY] == 9999)
+		{
+			exitPath.push(Point(curX - 1, curY));
+			stepsArray[curX - 1][curY] = curSteps;
+		}
+
+		if (curY < 60 && getWorld()->noNeighbors(curX, curY + 1) && stepsArray[curX][curY + 1] == 9999)
+		{
+			exitPath.push(Point(curX, curY + 1));
+			stepsArray[curX][curY + 1] = curSteps;
+		}
+
+		if (curY > 0 && getWorld()->noNeighbors(curX, curY - 1) && stepsArray[curX][curY - 1] == 9999)
+		{
+			exitPath.push(Point(curX, curY - 1));
+			stepsArray[curX][curY - 1] = curSteps;
+		}
+
+	}
+	int minSteps;
+	if (finalX == 0 && finalY == 0)
+	{
+		minSteps = min(stepsArray[finalX + 1][finalY], stepsArray[finalX][finalY + 1]);
+		if (minSteps == stepsArray[finalX + 1][finalY])
+			finalDir = right;
+		else
+			finalDir = up;
+	}
+	else if (finalX == 0)
+	{
+		minSteps = min(stepsArray[finalX + 1][finalY], min(stepsArray[finalX][finalY + 1], stepsArray[finalX][finalY - 1]));
+		if (minSteps == stepsArray[finalX + 1][finalY])
+			finalDir = right;
+		else if (minSteps == stepsArray[finalX][finalY + 1])
+			finalDir = up;
+		else
+			finalDir = down;
+	}
+
+	else if (finalY == 0)
+	{
+		minSteps = min(stepsArray[finalX][finalY + 1], min(stepsArray[finalX - 1][finalY], stepsArray[finalX + 1][finalY]));
+		if (minSteps == stepsArray[finalX + 1][finalY])
+			finalDir = right;
+		else if (minSteps == stepsArray[finalX][finalY + 1])
+			finalDir = up;
+		else
+			finalDir = left;
+	}
+	else
+	{
+		minSteps = min(min(stepsArray[finalX][finalY + 1], stepsArray[finalX][finalY - 1]), min(stepsArray[finalX - 1][finalY], stepsArray[finalX + 1][finalY]));
+		if (minSteps == stepsArray[finalX + 1][finalY])
+			finalDir = right;
+		else if (minSteps == stepsArray[finalX][finalY + 1])
+			finalDir = up;
+		else if (minSteps == stepsArray[finalX - 1][finalY])
+			finalDir = left;
+		else
+			finalDir = down;
+
+	}
+
+	steps = minSteps;
+	return rv;
+}
+
 bool Protestor::isFacingIceman()
 {
 	int proDir = this->getDirection();

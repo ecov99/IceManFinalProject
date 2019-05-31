@@ -7,6 +7,7 @@
 */
 #include "GraphObject.h"
 #include <algorithm>
+#include <queue>
 using namespace std;
 
 class StudentWorld;
@@ -343,6 +344,8 @@ public:
 
 	bool isLeaving();
 	void setLeaving(bool b);
+
+	bool findNearestPath(int startX, int startY, int finalX, int finalY, Direction& finalDir, int& steps);
 
 	// attributes
 	int numSquaresToMoveInCurrentDirection_;
