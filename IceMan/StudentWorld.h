@@ -46,13 +46,13 @@ public:
 	void setDisplayText();
 	bool noNeighbors(int x,  int y);
 	bool hasIce(int x, int y);
-	void genNumOfRandomActors();
+	void genNumOfRandomActors(int level);
 	void populateBoulder(int num);
 	void populateGold(int num);
 	void populateBarrel(int num);
 	void populateWater(int num);
-	void populateGoodies();
-	void populateProtestor();
+	void populateGoodies(int level);
+	void populateProtestor(int level);
 	void resetTimeSinceLastProtestorAdd(int l);
 	void removeDeadGameObject();
 	

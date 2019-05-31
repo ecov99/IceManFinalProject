@@ -310,7 +310,7 @@ private:
 class Protestor : public Character {
 public:
 	// ctors & dtors
-	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 30, 30, left, 1, 0, health)
+	Protestor(StudentWorld* sw, int IID, int health, int level) : Character(sw, IID, 60, 60, left, 1, 0, health)
 	{
 		setVisible(true);
 		level_ = level;
@@ -370,10 +370,21 @@ public:
 
 class HardcoreProtestor : public Protestor {
 public:
-	HardcoreProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_HARD_CORE_PROTESTER, 20, level) {}
+	HardcoreProtestor(StudentWorld* sw, int level) : Protestor(sw, IID_HARD_CORE_PROTESTER, 20, level)
+	{
+		ticksToStare_ = max(50, 100 - level * 10);
+		staringAtGold_ = false;
+	}
 
 	//behaviors
 	virtual void doSomething();
+	bool isStaringAtGold();
+	void setStaringAtGold(bool b);
+	void resetTicksToStare(int l);
+
+	// attributes
+	int ticksToStare_;
+	bool staringAtGold_;
 };
 
 #endif // ACTOR_H_

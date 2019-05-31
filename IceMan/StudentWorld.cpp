@@ -60,7 +60,8 @@ int StudentWorld::init()
 		}
 	}
 
-	genNumOfRandomActors();
+	int level = getLevel() + 1;
+	genNumOfRandomActors(level);
 	timeSinceLastProtestorAdd_ = 0;
 	numberOfProtestors_ = 0;
 	populateBoulder(bouldersRemaining_);
@@ -101,11 +102,13 @@ int StudentWorld::move()
 		}
 	}
 
+	int level = getLevel() + 1;
+
 	// Step 3) populate random Actors
-	populateGoodies();
+	populateGoodies(level);
 
 	// Step 4) populate Protestors
-	populateProtestor();
+	populateProtestor(level);
 
 	// Step 4) remove newly dead actors after each tick
 	removeDeadGameObject();
@@ -202,8 +205,21 @@ void StudentWorld::takeDamage(Actor &culprit, Actor &victim)
 		else if (victim.getID() == IID_HARD_CORE_PROTESTER && culprit.calcDistance(victim) <= 4)
 		{
 			// if culprit is Boulder
+			if (culprit.getID() == IID_BOULDER)
+			{
+				Character* tempChar = (Character*)(&victim);
+				tempChar->decreaseHealth(10);
+				break;
+			}
 
-			// if culprit is Iceman
+			// if culprit is Squirt
+			else if (culprit.getID() == IID_WATER_SPURT)
+			{
+				Protestor* tempPro = (Protestor*)(&victim);
+				tempPro->decreaseHealth(2);
+				tempPro->isStunned();
+				break;
+			}
 
 		}
 		// if victim is Iceman and within range of the culprit
@@ -274,9 +290,8 @@ bool StudentWorld::hasIce(int x, int y)
 	return temp;
 }
 
-void StudentWorld::genNumOfRandomActors()
+void StudentWorld::genNumOfRandomActors(int l)
 {
-	int l = GameWorld::getLevel();
 	bouldersRemaining_ = min((l / 2) + 2, 9);
 	goldRemaining_ = max((5 - l) / 2, 2);
 	barrelsRemaining_ = min(2 + l, 21);
@@ -346,8 +361,8 @@ void StudentWorld::populateBarrel(int num)
 	}
 }
 
-void StudentWorld::populateGoodies() {
-	int l = getLevel();
+void StudentWorld::populateGoodies(int l) {
+	
 	int G = l * 25 + 100;
 
 	if (rand() % G == 0) {		// 1/G chance to gen either Sonar or Water
@@ -379,16 +394,29 @@ void StudentWorld::populateWater(int l)
 			h--;
 	}
 }
-void StudentWorld::populateProtestor()
+void StudentWorld::populateProtestor(int l)
 {
-	int l = getLevel();
+	int probabilityOfHC = min(90, l*10+30);
 
 	timeSinceLastProtestorAdd_--;
-	if (timeSinceLastProtestorAdd_ <= 0 && numberOfProtestors_ <= totalNumberOfProtestorsOnField_) {
-		RegularProtestor* testProt_ = new RegularProtestor(this, l);
-		currentActors.push_back(testProt_);
-		resetTimeSinceLastProtestorAdd(l);
-		numberOfProtestors_++;
+	if (timeSinceLastProtestorAdd_ <= 0 && numberOfProtestors_ <= totalNumberOfProtestorsOnField_)
+	{
+		// generate HC Protestor
+		if (rand() % 100 < probabilityOfHC)
+		{
+			HardcoreProtestor* tempHCProt = new HardcoreProtestor(this, l);
+			currentActors.push_back(tempHCProt);
+			resetTimeSinceLastProtestorAdd(l);
+			numberOfProtestors_++;
+		}
+		// generate Reg Protestor
+		else
+		{
+			RegularProtestor* tempProt_ = new RegularProtestor(this, l);
+			currentActors.push_back(tempProt_);
+			resetTimeSinceLastProtestorAdd(l);
+			numberOfProtestors_++;
+		}
 	}
 
 }
@@ -431,7 +459,7 @@ int StudentWorld::genRandNumber(int min, int max)
 void StudentWorld::setDisplayText()
 {
 	string temp;
-	int level = GameWorld::getLevel();
+	int level = GameWorld::getLevel() + 1;
 	int lives = GameWorld::getLives();
 	int score = GameWorld::getScore();
 	

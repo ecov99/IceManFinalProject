@@ -1290,5 +1290,164 @@ void RegularProtestor::doSomething()
 
 void HardcoreProtestor::doSomething()
 {
-	
+	//// TEST
+//cout << "Health: " << health_ << endl;
+
+// Check protestors health
+	if (health_ <= 0 && isLeaving() == false)
+	{
+		getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+		setLeaving(true);
+		setResting(false);
+		resetRestingCount(level_);
+	}
+	// Protestor is waiting to doSomething
+	if (isResting() && isStaringAtGold() == false)
+	{
+		restingCount_--;
+		if (restingCount_ <= 0)
+		{
+			setResting(false);
+			resetRestingCount(level_);
+		}
+		return;
+		//cout << "RESTING" << endl;
+	}
+	// Protestor is staring at gold
+	if (isStaringAtGold() && isLeaving() == false)
+	{
+		ticksToStare_--;
+		if (ticksToStare_ <= 0)
+		{
+			setStaringAtGold(false);
+			resetTicksToStare(level_);
+		}
+	}
+	// Protestor is leaving oil field
+	if (isLeaving() == true)
+	{
+		// TEST: until shortest path is determined
+		setActive(false);
+		getWorld()->numberOfProtestors_--;
+		return;
+
+		if (calcDistance(60, 60) <= 1) // Protestor is at the exit
+			setActive(false);
+		else
+		{
+			// find shortest path
+			// move towards it
+		}
+
+		//cout << "LEAVING" << endl;
+	}
+	// Protestor is trying to shout
+	else if (checkForIcemanInRadius() == true && isFacingIceman())
+	{
+		if (isWaitingToYell())	// if I recently shouted
+		{
+			yellingCount_--;	// wait
+			if (yellingCount_ <= 0)
+				setWaitingToYell(false);	// dont wait anymore
+		}
+		else	// shout at Iceman
+		{
+			getWorld()->playSound(SOUND_PROTESTER_YELL);
+			getWorld()->takeDamage(*this, *getWorld()->IcemanPtr_);
+			setWaitingToYell(true);
+			resetWaitingToYellCount();
+		}
+
+		//cout << "YELLING" << endl;
+	}
+	// Protestor walks towards Iceman he has line of sight
+	else if (checkForIcemanInRadius() == false && hasLineOfSight() == true)	// > 4 away && hasLineOfSight
+	{
+		// face and move towards Iceman one space
+		faceIcemanAndMove();
+		resetRestingCount(level_);
+		setResting(true);
+
+		/************************************************
+			set numSquaresToMoveInCurrentDirection = 0
+				unless Protestor still hasLineOfSight()
+				he will still move towards Iceman
+		************************************************/
+		numSquaresToMoveInCurrentDirection_ = 0;
+		//cout << "FACING ICEMAN" << endl;
+	}
+	// Protestor needs new direction
+	else
+	{
+		numSquaresToMoveInCurrentDirection_--;
+		if (numSquaresToMoveInCurrentDirection_ <= 0)
+		{
+			genNewDirection();
+			numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
+			return;
+		}
+
+		// check to move if protestor is facing up
+		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 1) == false
+			&& getY() < 60)
+		{
+			moveTo(getX(), getY() + 1);
+			resetRestingCount(level_);
+			setResting(true);
+		}
+		// check to move if protestor is facing down
+		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 1) == false
+			&& getY() > 0)
+		{
+			moveTo(getX(), getY() - 1);
+			resetRestingCount(level_);
+			setResting(true);
+		}
+		// check to move if protestor is facing left
+		else if (getDirection() == left && getWorld()->hasIce(getX() - 1, getY()) == false
+			&& getX() > 0)
+		{
+			moveTo(getX() - 1, getY());
+			resetRestingCount(level_);
+			setResting(true);
+		}
+		// check to move if protestor is facing right
+		else if (getDirection() == left && getWorld()->hasIce(getX() + 1, getY()) == false
+			&& getX() < 60)
+		{
+			moveTo(getX() + 1, getY());
+			resetRestingCount(level_);
+			setResting(true);
+		}
+		else
+		{
+			genNewDirection();
+		}
+		//cout << "MOVE RANDOMLY" << endl;
+	}
+	/**********************************
+		PLACE AFTER MOVE FUNCTION
+		resetRestingCount(level_);
+	**********************************/
+
+
+	//If Protestor is sitting at an intersection and 
+	//made a perpendicular turn in 200 non-resting ticks
+	//then pick viable route is multiple viable routes exist pick one direction randomly
+	//new numSquaresToMoveInCurrentDirection values
+}
+
+bool HardcoreProtestor::isStaringAtGold()
+{
+	return staringAtGold_;
+}
+
+void HardcoreProtestor::setStaringAtGold(bool b)
+{
+	staringAtGold_ = b;
+}
+
+void HardcoreProtestor::resetTicksToStare(int level)
+{
+	ticksToStare_ = max(50, 100 - level * 10);
 }
