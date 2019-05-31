@@ -25,13 +25,6 @@ public:
 	StudentWorld(string assetDir)
 		: GameWorld(assetDir)
 	{}
-	~StudentWorld()
-	{
-		// DELETE TEST OBJECTS
-		delete testBoulder_;
-		testBoulder_ = nullptr;
-	}
-
 
 	virtual int init();
 	virtual int move();
@@ -77,7 +70,7 @@ public:
 	int totalNumberOfProtestorsOnField_;
 	
 	Iceman* IcemanPtr_; // points to IcemanPtr_
-	Boulder* testBoulder_;
+	
 };
 
 #endif // STUDENTWORLD_H_

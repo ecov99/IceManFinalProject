@@ -241,29 +241,72 @@ Actor* Boulder::checkCollision(int &victimID) {
 	CLASS: Squirt
 ******************************************/
 void Squirt::doSomething() {
+	
+	int tempID = -1;
+	Actor* tempActor;
 
-	// MOVE UP if no boulder
+	// MOVE UP
 	if (this->getDirection() == up && checkForBoulders(this->getDirection()) && checkForIce() == false) {
-		moveTo(getX(), getY() + 1);
-		incMovementCount();
+		tempActor = checkForProtestors(getDirection(), tempID);
+		if (tempActor != nullptr)
+		{
+			setActive(false);
+			getWorld()->takeDamage(*this, *tempActor);
+			getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		}
+		else
+		{
+			moveTo(getX(), getY() + 1);
+			incMovementCount();
+		}
 	}
 
-	// MOVE DOWN if no boulder
+	// MOVE DOWN
 	else if (this->getDirection() == down && checkForBoulders(this->getDirection()) && checkForIce() == false) {
-		moveTo(getX(), getY() - 1);
-		incMovementCount();
+		tempActor = checkForProtestors(getDirection(), tempID);
+		if (tempActor != nullptr)
+		{
+			setActive(false);
+			getWorld()->takeDamage(*this, *tempActor);
+			getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		}
+		else
+		{
+			moveTo(getX(), getY() - 1);
+			incMovementCount();
+		}
 	}
 
-	// MOVE LEFT if no boulder
+	// MOVE LEFT
 	else if (this->getDirection() == left && checkForBoulders(this->getDirection()) && checkForIce() == false) {
-		moveTo(getX() - 1, getY());
-		incMovementCount();
+		tempActor = checkForProtestors(getDirection(), tempID);
+		if (tempActor != nullptr)
+		{
+			setActive(false);
+			getWorld()->takeDamage(*this, *tempActor);
+			getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		}
+		else
+		{
+			moveTo(getX() - 1, getY());
+			incMovementCount();
+		}
 	}
 
-	// MOVE RIGHT if no boulder
+	// MOVE RIGHT
 	else if (this->getDirection() == right && checkForBoulders(this->getDirection()) && checkForIce() == false) {
-		moveTo(getX() + 1, getY());
-		incMovementCount();
+		tempActor = checkForProtestors(getDirection(), tempID);
+		if (tempActor != nullptr)
+		{
+			setActive(false);
+			getWorld()->takeDamage(*this, *tempActor);
+			getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		}
+		else
+		{
+			moveTo(getX() + 1, getY());
+			incMovementCount();
+		}
 	}
 	else {
 		setMoving(false);
@@ -284,6 +327,59 @@ bool Squirt::isMoving() {
 }
 void Squirt::setMoving(bool b) {
 	moving_ = b;
+}
+
+Actor* Squirt::checkForProtestors(int dir, int &tempID)
+{
+	double temp;
+
+	// loop through current actors vector
+	for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+
+		// check only boulders
+		if (getWorld()->currentActors[i]->getID() == (IID_PROTESTER || IID_HARD_CORE_PROTESTER)) {
+
+			// check distance Actor is from each boulder
+			temp = calcDistance(*getWorld()->currentActors[i]);
+
+			// if Protestor is within radius of 3
+			if (temp <= 3) {
+				// check for going up, if Protestor is up
+				if (dir == up && getWorld()->currentActors[i]->getY() > this->getY())
+				{
+					tempID = getWorld()->currentActors[i]->getID();
+					Actor* tempProt = getWorld()->currentActors[i];
+					return tempProt;	// it's okay
+				}
+
+				// check for going down, if Protestor is down
+				if (dir == down && getWorld()->currentActors[i]->getY() < this->getY())
+				{
+					tempID = getWorld()->currentActors[i]->getID();
+					Actor* tempProt = getWorld()->currentActors[i];
+					return tempProt;	// it's okay
+				}
+
+				// check for going left, if Protestor is to the left
+				if (dir == left && getWorld()->currentActors[i]->getX() < this->getX())
+				{
+					tempID = getWorld()->currentActors[i]->getID();
+					Actor* tempProt = getWorld()->currentActors[i];
+					return tempProt;	// it's okay
+				}
+
+				// check for going right, if Protestor is to the right
+				if (dir == right && getWorld()->currentActors[i]->getX() > this->getX())
+				{
+					tempID = getWorld()->currentActors[i]->getID();
+					Actor* tempProt = getWorld()->currentActors[i];
+					return tempProt;	// it's okay
+				}
+
+			}
+		}
+	}
+	return nullptr;
 }
 
 
@@ -345,6 +441,34 @@ void Gold::doSomething()
 		getWorld()->playSound(SOUND_GOT_GOODIE);
 		getWorld()->increaseScore(10);
 		getWorld()->IcemanPtr_->incGold();
+	}
+	// determine if Protestor is close enough to pick up Gold (if temporary)
+	else if (isTemp() == true) {
+		for (int i = 0; i < getWorld()->currentActors.size(); i++)
+		{
+			if (getWorld()->currentActors[i]->getID() == IID_PROTESTER
+				|| getWorld()->currentActors[i]->getID() == IID_HARD_CORE_PROTESTER)
+			{
+				if (calcDistance(*getWorld()->currentActors[i]) <= 3)
+				{
+					setActive(false);
+					getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
+					
+					Protestor* tempChar = static_cast<Protestor*>(getWorld()->currentActors[i]);
+					if(tempChar->getID() == IID_PROTESTER)
+					{ 
+						tempChar->setLeaving(true);
+						getWorld()->increaseScore(25);
+					}
+					else if (tempChar->getID() == IID_HARD_CORE_PROTESTER)
+					{
+						getWorld()->increaseScore(50);
+					}
+
+					break;
+				}
+			}
+		}
 	}
 }
 bool Character::isAnnoyed() {
@@ -450,220 +574,220 @@ void Iceman::doSomething()
 		// user pressed a key this tick
 		switch (k)
 		{
-		/******************************************
-			MOVE LEFT
-		******************************************/
-		case KEY_PRESS_LEFT:
-			// change direction
-			if (getDirection() != left)	
-			{
-				setDirection(left);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getX() > 0 && checkForBoulders(k))
+			/******************************************
+				MOVE LEFT
+			******************************************/
+			case KEY_PRESS_LEFT:
+				// change direction
+				if (getDirection() != left)	
 				{
-					moveTo(getX() - 1, getY());
+					setDirection(left);
 				}
-			}
-			break;
-
-		/******************************************
-			MOVE RIGHT
-		******************************************/
-		case KEY_PRESS_RIGHT:
-			// change direction
-			if (getDirection() != right)
-			{
-				setDirection(right);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getX() < 60 && checkForBoulders(k))
+				// move
+				else
 				{
-					moveTo(getX() + 1, getY());
-				}
-			}
-			break;
-		
-		/******************************************
-			MOVE DOWN
-		******************************************/
-		case KEY_PRESS_DOWN:
-			// change direction
-			if (getDirection() != down)
-			{
-				setDirection(down);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getY() > 0 && checkForBoulders(k))
-				{
-					moveTo(getX(), getY() - 1);
-				}
-			}
-			break;
-
-		/******************************************
-			MOVE UP
-		******************************************/
-		case KEY_PRESS_UP:
-			// change direction
-			if (getDirection() != up)
-			{
-				setDirection(up);
-			}
-			// move
-			else
-			{
-				// if space is in bounds and no boulder
-				if (getY() < 60 && checkForBoulders(k))
-				{
-					moveTo(getX(), getY() + 1);
-				}
-			}
-			break;
-
-		/******************************************
-			DIE
-		******************************************/
-		case KEY_PRESS_ESCAPE:
-			getWorld()->IcemanPtr_->setActive(false);
-			break;
-		
-		/******************************************
-			DROP GOLD
-		******************************************/
-		case KEY_PRESS_TAB:	
-			if (getWorld()->IcemanPtr_->getNumOfGold() > 0) {
-				Gold* temp = new Gold(getWorld(), getX(), getY(), true);
-				getWorld()->currentActors.push_back(temp);
-				getWorld()->IcemanPtr_->decGold();
-			}
-			break;
-
-		/******************************************
-			USE SONAR
-		******************************************/
-		case 'z':
-		case 'Z':
-			if (getWorld()->IcemanPtr_->getNumOfSonars() > 0) {
-				// loop through current Actors
-				for (int i = 0; i < getWorld()->currentActors.size(); i++) {
-					// if actor is hidden and within radius of 12
-					if (getWorld()->currentActors[i]->isVisible() == false &&
-						calcDistance(*getWorld()->currentActors[i]) <= 12)
+					// if space is in bounds and no boulder
+					if (getX() > 0 && checkForBoulders(k))
 					{
-						getWorld()->currentActors[i]->GraphObject::setVisible(true);
+						moveTo(getX() - 1, getY());
 					}
 				}
-				getWorld()->IcemanPtr_->decNumOfSonars();
-			}
-			break;
+				break;
 
-		/******************************************
-			USE SQUIRT
-		******************************************/
-		case KEY_PRESS_SPACE:
-
-			// if there are squirts in inventory
-			if (getWorld()->IcemanPtr_->getNumOfSquirts() > 0) {
-
-				// UP
-				// if space is in bounds AND in same direction AND no boulder in direction
-				if (getY() < 60 && getWorld()->IcemanPtr_->getDirection() == up && checkSquirtLocation(up))
+			/******************************************
+				MOVE RIGHT
+			******************************************/
+			case KEY_PRESS_RIGHT:
+				// change direction
+				if (getDirection() != right)
 				{
-					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() + 4, getWorld()->IcemanPtr_->getDirection());
-					getWorld()->currentActors.push_back(temp);
-					getWorld()->IcemanPtr_->decNumOfSquirts();
-					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+					setDirection(right);
 				}
-
-				// DOWN
-				// if space is in bounds AND in same direction AND no boulder in direction
-				else if (getY() > 0 && getWorld()->IcemanPtr_->getDirection() == down && checkSquirtLocation(down))
+				// move
+				else
 				{
-					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() - 4, getWorld()->IcemanPtr_->getDirection());
-					getWorld()->currentActors.push_back(temp);
-					getWorld()->IcemanPtr_->decNumOfSquirts();
-					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
-				}
-
-				// LEFT
-				// if space is in bounds AND in same direction AND no boulder in direction
-				else if (getX() > 0 && getWorld()->IcemanPtr_->getDirection() == left && checkSquirtLocation(left))
-				{
-					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() - 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
-					getWorld()->currentActors.push_back(temp);
-					getWorld()->IcemanPtr_->decNumOfSquirts();
-					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
-				}
-
-				// RIGHT
-				// if space is in bounds AND in same direction AND no boulder in direction
-				else if (getX() < 60 && getWorld()->IcemanPtr_->getDirection() == right && checkSquirtLocation(right))
-				{
-					Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() + 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
-					getWorld()->currentActors.push_back(temp);
-					getWorld()->IcemanPtr_->decNumOfSquirts();
-					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
-				}
-
-				// otherwise, there is a boulder in front
-				else {
-					getWorld()->IcemanPtr_->decNumOfSquirts();
-					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
-				}
-			}
-			break;
-
-		/******************************************
-			TESTING: used to increment Sonar
-		******************************************/
-		case 61:// PLUS
-			getWorld()->IcemanPtr_->incNumOfSonars();
-			break;
-
-		/******************************************
-			TESTING: toggles visibility of actors
-		******************************************/
-		case 8:// BACKSPACE
-			// loop through active Actors
-			for (int i = 1; i < getWorld()->currentActors.size(); i++) {
-				// toggle visibility of Actors
-				if (getWorld()->currentActors[i]->getID() != IID_SONAR &&
-					getWorld()->currentActors[i]->getID() != IID_WATER_POOL)
-				{
-					if (getWorld()->currentActors[i]->isVisible() == false) {
-						getWorld()->currentActors[i]->GraphObject::setVisible(true);
+					// if space is in bounds and no boulder
+					if (getX() < 60 && checkForBoulders(k))
+					{
+						moveTo(getX() + 1, getY());
 					}
+				}
+				break;
+		
+			/******************************************
+				MOVE DOWN
+			******************************************/
+			case KEY_PRESS_DOWN:
+				// change direction
+				if (getDirection() != down)
+				{
+					setDirection(down);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getY() > 0 && checkForBoulders(k))
+					{
+						moveTo(getX(), getY() - 1);
+					}
+				}
+				break;
+
+			/******************************************
+				MOVE UP
+			******************************************/
+			case KEY_PRESS_UP:
+				// change direction
+				if (getDirection() != up)
+				{
+					setDirection(up);
+				}
+				// move
+				else
+				{
+					// if space is in bounds and no boulder
+					if (getY() < 60 && checkForBoulders(k))
+					{
+						moveTo(getX(), getY() + 1);
+					}
+				}
+				break;
+
+			/******************************************
+				DIE
+			******************************************/
+			case KEY_PRESS_ESCAPE:
+				getWorld()->IcemanPtr_->setActive(false);
+				break;
+		
+			/******************************************
+				DROP GOLD
+			******************************************/
+			case KEY_PRESS_TAB:	
+				if (getWorld()->IcemanPtr_->getNumOfGold() > 0) {
+					Gold* temp = new Gold(getWorld(), getX(), getY(), true);
+					getWorld()->currentActors.push_back(temp);
+					getWorld()->IcemanPtr_->decGold();
+				}
+				break;
+
+			/******************************************
+				USE SONAR
+			******************************************/
+			case 'z':
+			case 'Z':
+				if (getWorld()->IcemanPtr_->getNumOfSonars() > 0) {
+					// loop through current Actors
+					for (int i = 0; i < getWorld()->currentActors.size(); i++) {
+						// if actor is hidden and within radius of 12
+						if (getWorld()->currentActors[i]->isVisible() == false &&
+							calcDistance(*getWorld()->currentActors[i]) <= 12)
+						{
+							getWorld()->currentActors[i]->GraphObject::setVisible(true);
+						}
+					}
+					getWorld()->IcemanPtr_->decNumOfSonars();
+				}
+				break;
+
+			/******************************************
+				USE SQUIRT
+			******************************************/
+			case KEY_PRESS_SPACE:
+
+				// if there are squirts in inventory
+				if (getWorld()->IcemanPtr_->getNumOfSquirts() > 0) {
+
+					// UP
+					// if space is in bounds AND in same direction AND no boulder in direction
+					if (getY() < 60 && getWorld()->IcemanPtr_->getDirection() == up && checkSquirtLocation(up))
+					{
+						Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() + 4, getWorld()->IcemanPtr_->getDirection());
+						getWorld()->currentActors.push_back(temp);
+						getWorld()->IcemanPtr_->decNumOfSquirts();
+						getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+					}
+
+					// DOWN
+					// if space is in bounds AND in same direction AND no boulder in direction
+					else if (getY() > 0 && getWorld()->IcemanPtr_->getDirection() == down && checkSquirtLocation(down))
+					{
+						Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX(), getWorld()->IcemanPtr_->getY() - 4, getWorld()->IcemanPtr_->getDirection());
+						getWorld()->currentActors.push_back(temp);
+						getWorld()->IcemanPtr_->decNumOfSquirts();
+						getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+					}
+
+					// LEFT
+					// if space is in bounds AND in same direction AND no boulder in direction
+					else if (getX() > 0 && getWorld()->IcemanPtr_->getDirection() == left && checkSquirtLocation(left))
+					{
+						Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() - 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
+						getWorld()->currentActors.push_back(temp);
+						getWorld()->IcemanPtr_->decNumOfSquirts();
+						getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+					}
+
+					// RIGHT
+					// if space is in bounds AND in same direction AND no boulder in direction
+					else if (getX() < 60 && getWorld()->IcemanPtr_->getDirection() == right && checkSquirtLocation(right))
+					{
+						Squirt* temp = new Squirt(getWorld(), getWorld()->IcemanPtr_->getX() + 4, getWorld()->IcemanPtr_->getY(), getWorld()->IcemanPtr_->getDirection());
+						getWorld()->currentActors.push_back(temp);
+						getWorld()->IcemanPtr_->decNumOfSquirts();
+						getWorld()->playSound(SOUND_PLAYER_SQUIRT);
+					}
+
+					// otherwise, there is a boulder in front
 					else {
-						if (getWorld()->currentActors[i]->getID() != IID_BOULDER)
-							getWorld()->currentActors[i]->GraphObject::setVisible(false);
+						getWorld()->IcemanPtr_->decNumOfSquirts();
+						getWorld()->playSound(SOUND_PLAYER_SQUIRT);
 					}
 				}
-			}
-			break;
+				break;
 
-		/******************************************
-			TESTING: used to populate Water
-		******************************************/
-		case '-':
-			getWorld()->populateWater(getWorld()->getLevel());
-			break;
+			/******************************************
+				TESTING: used to increment Gold
+			******************************************/
+			case 61:// PLUS
+				getWorld()->IcemanPtr_->incGold();
+				break;
 
-		/******************************************
-			TESTING: stops program
-		******************************************/
-		case 127:// DEL
-			exit(0);
-			break;
+			/******************************************
+				TESTING: toggles visibility of actors
+			******************************************/
+			case 8:// BACKSPACE
+				// loop through active Actors
+				for (int i = 1; i < getWorld()->currentActors.size(); i++) {
+					// toggle visibility of Actors
+					if (getWorld()->currentActors[i]->getID() != IID_SONAR &&
+						getWorld()->currentActors[i]->getID() != IID_WATER_POOL)
+					{
+						if (getWorld()->currentActors[i]->isVisible() == false) {
+							getWorld()->currentActors[i]->GraphObject::setVisible(true);
+						}
+						else {
+							if (getWorld()->currentActors[i]->getID() != IID_BOULDER)
+								getWorld()->currentActors[i]->GraphObject::setVisible(false);
+						}
+					}
+				}
+				break;
+
+			/******************************************
+				TESTING: used to populate Water
+			******************************************/
+			case '-':
+				getWorld()->populateWater(getWorld()->getLevel());
+				break;
+
+			/******************************************
+				TESTING: stops program
+			******************************************/
+			case 127:// DEL
+				exit(0);
+				break;
 		}
 	}
 
@@ -751,7 +875,6 @@ bool Protestor::checkForIcemanInRadius()
 
 bool Protestor::hasLineOfSight()
 {
-
 	// get x,y coordinates of both iceman and protestors
 	int xP = this->getX();
 	int yP = this->getY();
@@ -759,33 +882,38 @@ bool Protestor::hasLineOfSight()
 	int yI = getWorld()->IcemanPtr_->getY();
 	double deltaX = xI - xP;
 
+	// Iceman is on same horizontal line as Protestor
 	if (yP == yI)
 	{
+		// Iceman is to the right of Protestor
 		if (xP < xI)
 		{
+			// Checking distance between
 			for (int x = xP; x <= xI; x++)
 			{
 				for (int y = yP; y < (yP + 4); y++)
 				{
-					//If has Ice
+					// If has Ice anywhere inbetween
 					if (getWorld()->iceField_[x][y] != nullptr)
 					{
-						//Has ice return false
-						//Does not have line of sight
+						// Does not have line of sight, return false
 						return false;
 					}
 
 				}
 			}
+			// otherwise, no ice, return true
 			return true;
 		}
+		// Iceman is to the left of Protestor
 		else if (xP > xI)
 		{
+			// Checking distance between
 			for (int x = xI; x <= xP; x++)
 			{
 				for (int y = yI; y < (yI + 4); y++)
 				{
-					//If has Ice
+					// If has Ice anywhere inbetween
 					if (getWorld()->iceField_[x][y] != nullptr)
 					{
 						//Has ice return false
@@ -794,13 +922,17 @@ bool Protestor::hasLineOfSight()
 					}
 				}
 			}
+			// otherwise, has line of sight, return true
 			return true;
 		}
 	}
+	// Iceman is on the same vertical line as Protestor
 	else if(xP == xI)
 	{
+		// If Protestor is above Iceman
 		if (yP > yI)
 		{
+			// Check distance inbetween
 			for (int x = xI; x < (xI + 4); x++)
 			{
 				for (int y = yI; y <= yP; y++)
@@ -816,13 +948,15 @@ bool Protestor::hasLineOfSight()
 			}
 			return true;
 		}
+		// If Protestor is below Iceman
 		else if (yP < yI)
 		{
+			// Check distance inbetween
 			for (int x = xP; x < (xP + 4); x++)
 			{
 				for (int y = yP; y <= yI; y++)
 				{
-					//If has Ice
+					// If has Ice
 					if (getWorld()->iceField_[x][y] != nullptr)
 					{
 						//Has ice return false
@@ -948,112 +1082,10 @@ void Protestor::setLeaving(bool b)
 	leaving_ = b;
 }
 
-bool Protestor::findNearestPath(int startX, int startY, int finalX, int finalY, Direction & finalDir, int & steps)
+void Protestor::isStunned()
 {
-	struct Point {
-		Point(int x, int y) : m_x(x), m_y(y) {}
-		int m_x;
-		int m_y;
-	};
-
-	int stepsArray[64][64];
-	bool rv = false;
-	for (int i = 0; i != 64; i++)
-		for (int j = 0; j != 64; j++)
-			stepsArray[i][j] = 9999;
-	std::queue<Point> exitPath;
-
-	exitPath.push(Point(startX, startY));
-	stepsArray[startX][startY] = 0;
-
-	int curSteps;
-
-	while (!exitPath.empty())
-	{
-		int curX = exitPath.front().m_x;
-		int curY = exitPath.front().m_y;
-		exitPath.pop();
-
-		if (curX == finalX && curY == finalY)
-			rv = true;
-
-		curSteps = stepsArray[curX][curY];
-		curSteps++;
-
-
-
-		if (curX < 60 && getWorld()->noNeighbors(curX + 1, curY) && 
-		   !getWorld()->hasIce(curX, curY + 4) && stepsArray[curX + 1][curY] == 9999)
-		{
-			exitPath.push(Point(curX + 1, curY));
-			stepsArray[curX + 1][curY] = curSteps;
-		}
-
-		if (curX > 1 && getWorld()->noNeighbors(curX - 1, curY) && stepsArray[curX - 1][curY] == 9999)
-		{
-			exitPath.push(Point(curX - 1, curY));
-			stepsArray[curX - 1][curY] = curSteps;
-		}
-
-		if (curY < 60 && getWorld()->noNeighbors(curX, curY + 1) && stepsArray[curX][curY + 1] == 9999)
-		{
-			exitPath.push(Point(curX, curY + 1));
-			stepsArray[curX][curY + 1] = curSteps;
-		}
-
-		if (curY > 0 && getWorld()->noNeighbors(curX, curY - 1) && stepsArray[curX][curY - 1] == 9999)
-		{
-			exitPath.push(Point(curX, curY - 1));
-			stepsArray[curX][curY - 1] = curSteps;
-		}
-
-	}
-	int minSteps;
-	if (finalX == 0 && finalY == 0)
-	{
-		minSteps = min(stepsArray[finalX + 1][finalY], stepsArray[finalX][finalY + 1]);
-		if (minSteps == stepsArray[finalX + 1][finalY])
-			finalDir = right;
-		else
-			finalDir = up;
-	}
-	else if (finalX == 0)
-	{
-		minSteps = min(stepsArray[finalX + 1][finalY], min(stepsArray[finalX][finalY + 1], stepsArray[finalX][finalY - 1]));
-		if (minSteps == stepsArray[finalX + 1][finalY])
-			finalDir = right;
-		else if (minSteps == stepsArray[finalX][finalY + 1])
-			finalDir = up;
-		else
-			finalDir = down;
-	}
-
-	else if (finalY == 0)
-	{
-		minSteps = min(stepsArray[finalX][finalY + 1], min(stepsArray[finalX - 1][finalY], stepsArray[finalX + 1][finalY]));
-		if (minSteps == stepsArray[finalX + 1][finalY])
-			finalDir = right;
-		else if (minSteps == stepsArray[finalX][finalY + 1])
-			finalDir = up;
-		else
-			finalDir = left;
-	}
-	else
-	{
-		minSteps = min(min(stepsArray[finalX][finalY + 1], stepsArray[finalX][finalY - 1]), min(stepsArray[finalX - 1][finalY], stepsArray[finalX + 1][finalY]));
-		if (minSteps == stepsArray[finalX + 1][finalY])
-			finalDir = right;
-		else if (minSteps == stepsArray[finalX][finalY + 1])
-			finalDir = up;
-		else if (minSteps == stepsArray[finalX - 1][finalY])
-			finalDir = left;
-		else
-			finalDir = down;
-
-	}
-
-	steps = minSteps;
-	return rv;
+	int l = getWorld()->getLevel();
+	restingCount_ = max(50, 100-l*10);
 }
 
 bool Protestor::isFacingIceman()
@@ -1119,22 +1151,36 @@ void Protestor::faceIcemanAndMove()
 
 void RegularProtestor::doSomething()
 {
-	// Check protestors health
-	if (health_ <= 0)
-		setLeaving(true);
+	//// TEST
+	//cout << "Health: " << health_ << endl;
 
+	// Check protestors health
+	if (health_ <= 0 && isLeaving() == false)
+	{
+		getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+		setLeaving(true);
+		setResting(false);
+		resetRestingCount(level_);
+	}
 	// Protestor is waiting to doSomething
 	if (isResting())
 	{
 		restingCount_--;
 		if (restingCount_ <= 0)
+		{
 			setResting(false);
+			resetRestingCount(level_);
+		}
+		return;
+		//cout << "RESTING" << endl;
 	}
 	// Protestor is leaving oil field
-	else if (isLeaving() == true)
+	if (isLeaving() == true)
 	{
 		// TEST: until shortest path is determined
 		setActive(false);
+		getWorld()->numberOfProtestors_--;
+		return;
 
 		if (calcDistance(60, 60) <= 1) // Protestor is at the exit
 			setActive(false);
@@ -1143,6 +1189,8 @@ void RegularProtestor::doSomething()
 			// find shortest path
 			// move towards it
 		}
+
+		//cout << "LEAVING" << endl;
 	}
 	// Protestor is trying to shout
 	else if (checkForIcemanInRadius() == true && isFacingIceman())
@@ -1160,9 +1208,11 @@ void RegularProtestor::doSomething()
 			setWaitingToYell(true);
 			resetWaitingToYellCount();
 		}
+
+		//cout << "YELLING" << endl;
 	}
 	// Protestor walks towards Iceman he has line of sight
-	else if (checkForIcemanInRadius() == false && hasLineOfSight())
+	else if (checkForIcemanInRadius() == false && hasLineOfSight() == true)	// > 4 away && hasLineOfSight
 	{
 		// face and move towards Iceman one space
 		faceIcemanAndMove();
@@ -1175,45 +1225,56 @@ void RegularProtestor::doSomething()
 				he will still move towards Iceman
 		************************************************/
 		numSquaresToMoveInCurrentDirection_ = 0;
+		//cout << "FACING ICEMAN" << endl;
 	}
-	// Protestor is moving around randomly
-	else if (hasLineOfSight() == false)
-	{
+	// Protestor needs new direction
+	else
+	{	
 		numSquaresToMoveInCurrentDirection_--;
 		if (numSquaresToMoveInCurrentDirection_ <= 0)
 		{
 			genNewDirection();
+			numSquaresToMoveInCurrentDirection_ = updateMobilityCount();
+			return;
 		}
 
 		// check to move if protestor is facing up
-		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 4) == false
-			&& checkForBoulders(getDirection()) == false)
+		if (getDirection() == up && getWorld()->hasIce(getX(), getY() + 1) == false
+			&& getY() < 60)
 		{
 			moveTo(getX(), getY() + 1);
+			resetRestingCount(level_);
+			setResting(true);
 		}
 		// check to move if protestor is facing down
-		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 4) == false
-			&& checkForBoulders(getDirection()) == false)
+		else if (getDirection() == down && getWorld()->hasIce(getX(), getY() - 1) == false
+			&& getY() > 0)
 		{
 			moveTo(getX(), getY() - 1);
+			resetRestingCount(level_);
+			setResting(true);
 		}
 		// check to move if protestor is facing left
-		else if (getDirection() == left && getWorld()->hasIce(getX() - 4, getY()) == false
-			&& checkForBoulders(getDirection()) == false)
+		else if (getDirection() == left && getWorld()->hasIce(getX() - 1, getY()) == false
+			&& getX() > 0)
 		{
 			moveTo(getX() - 1, getY());
+			resetRestingCount(level_);
+			setResting(true);
 		}
 		// check to move if protestor is facing right
-		else if (getDirection() == left && getWorld()->hasIce(getX() + 4, getY()) == false
-			&& checkForBoulders(getDirection()) == false)
+		else if (getDirection() == left && getWorld()->hasIce(getX() + 1, getY()) == false
+			&& getX() < 60)
 		{
 			moveTo(getX() + 1, getY());
+			resetRestingCount(level_);
+			setResting(true);
 		}
 		else
 		{
 			genNewDirection();
 		}
-
+		//cout << "MOVE RANDOMLY" << endl;
 	}
 	/**********************************
 		PLACE AFTER MOVE FUNCTION

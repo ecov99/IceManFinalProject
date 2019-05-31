@@ -61,6 +61,8 @@ int StudentWorld::init()
 	}
 
 	genNumOfRandomActors();
+	timeSinceLastProtestorAdd_ = 0;
+	numberOfProtestors_ = 0;
 	populateBoulder(bouldersRemaining_);
 	populateGold(goldRemaining_);
 	populateBarrel(barrelsRemaining_);
@@ -136,6 +138,7 @@ void StudentWorld::cleanUp()
 			iceField_[i][j] = nullptr;
 		}
 	}
+
 }
 
 
@@ -178,13 +181,22 @@ void StudentWorld::takeDamage(Actor &culprit, Actor &victim)
 		// if victim is Regular Protestor and within range of the culprit
 		if (victim.getID() == IID_PROTESTER && culprit.calcDistance(victim) <= 4)
 		{
-			Character* tempChar = (Character*)(&victim);
-
 			// if culprit is Boulder
-			tempChar->decreaseHealth(10);
-
-			// if culprit is Iceman
-
+			if (culprit.getID() == IID_BOULDER)
+			{
+				Character* tempChar = (Character*)(&victim);
+				tempChar->decreaseHealth(10);
+				break;
+			}
+				
+			// if culprit is Squirt
+			else if (culprit.getID() == IID_WATER_SPURT)
+			{
+				Protestor* tempPro = (Protestor*)(&victim);
+				tempPro->decreaseHealth(2);
+				tempPro->isStunned();
+				break;
+			}
 		}
 		// if victim is HC Protestor and within range of the culprit
 		else if (victim.getID() == IID_HARD_CORE_PROTESTER && culprit.calcDistance(victim) <= 4)

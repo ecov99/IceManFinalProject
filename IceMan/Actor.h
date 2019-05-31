@@ -127,6 +127,7 @@ public:
 	void incMovementCount();
 	bool isMoving();
 	void setMoving(bool b);
+	Actor* checkForProtestors(int dir, int &tempID);
 
 	// attribute
 	int movementCount_;
@@ -334,19 +335,15 @@ public:
 	void testLineOfSight();
 	bool isFacingIceman();
 	void faceIcemanAndMove();
-
 	bool isResting();
 	void setResting(bool b);
 	void resetRestingCount(int level);
-
 	bool isWaitingToYell();
 	void setWaitingToYell(bool b);
 	void resetWaitingToYellCount();
-
 	bool isLeaving();
 	void setLeaving(bool b);
-
-	bool findNearestPath(int startX, int startY, int finalX, int finalY, Direction& finalDir, int& steps);
+	void isStunned();
 
 	// attributes
 	int numSquaresToMoveInCurrentDirection_;
