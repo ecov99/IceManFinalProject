@@ -25,6 +25,12 @@ public:
 	StudentWorld(string assetDir)
 		: GameWorld(assetDir)
 	{}
+	~StudentWorld()
+	{
+		// DELETE TEST OBJECTS
+		delete testBoulder_;
+		testBoulder_ = nullptr;
+	}
 
 
 	virtual int init();
@@ -40,20 +46,23 @@ public:
 	void decBarrels();
 	int getGoldRemaining();
 	void decGold();
+	void takeDamage(Actor &culprit, Actor &victim);
 
 	int genRandNumber();
 	int genRandNumber(int min, int max);
 	void setDisplayText();
 	bool noNeighbors(int x,  int y);
 	bool hasIce(int x, int y);
-	void genNumOfItems();
+	void genNumOfRandomActors();
 	void populateBoulder(int num);
 	void populateGold(int num);
 	void populateBarrel(int num);
-	void populateWater(int l);
+	void populateWater(int num);
 	void populateGoodies();
+	void populateProtestor();
+	void resetTimeSinceLastProtestorAdd(int l);
 	void removeDeadGameObject();
-
+	
 	/*
 	Personal Data (variables, structures, etc.)
 	*/
@@ -62,9 +71,13 @@ public:
 	int goldRemaining_;
 	int barrelsRemaining_;
 	int bouldersRemaining_;
+
+	int timeSinceLastProtestorAdd_;
+	int numberOfProtestors_;
+	int totalNumberOfProtestorsOnField_;
 	
 	Iceman* IcemanPtr_; // points to IcemanPtr_
-	RegularProtestor* testProt_;
+	Boulder* testBoulder_;
 };
 
 #endif // STUDENTWORLD_H_

@@ -26,8 +26,6 @@ int StudentWorld::init()
 	//Step 1) Create Iceman
 	IcemanPtr_ = new Iceman(this);
 	currentActors.push_back(IcemanPtr_);
-	testProt_ = new RegularProtestor(this,1);
-	currentActors.push_back(testProt_);
 	
 	//Step 2) Construct iceField
 
@@ -62,7 +60,7 @@ int StudentWorld::init()
 		}
 	}
 
-	genNumOfItems();
+	genNumOfRandomActors();
 	populateBoulder(bouldersRemaining_);
 	populateGold(goldRemaining_);
 	populateBarrel(barrelsRemaining_);
@@ -103,6 +101,9 @@ int StudentWorld::move()
 
 	// Step 3) populate random Actors
 	populateGoodies();
+
+	// Step 4) populate Protestors
+	populateProtestor();
 
 	// Step 4) remove newly dead actors after each tick
 	removeDeadGameObject();
@@ -169,6 +170,60 @@ void StudentWorld::decGold()
 	goldRemaining_--;
 }
 
+void StudentWorld::takeDamage(Actor &culprit, Actor &victim)
+{
+	// look for victim
+	for (int i = 0; i < currentActors.size(); i++)
+	{
+		// if victim is Regular Protestor and within range of the culprit
+		if (victim.getID() == IID_PROTESTER && culprit.calcDistance(victim) <= 4)
+		{
+			Character* tempChar = (Character*)(&victim);
+
+			// if culprit is Boulder
+			tempChar->decreaseHealth(10);
+
+			// if culprit is Iceman
+
+		}
+		// if victim is HC Protestor and within range of the culprit
+		else if (victim.getID() == IID_HARD_CORE_PROTESTER && culprit.calcDistance(victim) <= 4)
+		{
+			// if culprit is Boulder
+
+			// if culprit is Iceman
+
+		}
+		// if victim is Iceman and within range of the culprit
+		else if (victim.getID() == IID_PLAYER && culprit.calcDistance(victim) <= 4)
+		{
+			Character* tempChar = (Character*)(&victim);
+
+			// if culprit is Boulder
+			if (culprit.getID() == IID_BOULDER)
+			{
+				tempChar->decreaseHealth(10);
+				break;
+			}
+			// if culprit is Regular Protestor
+			else if (culprit.getID() == IID_PROTESTER)
+			{
+				tempChar->decreaseHealth(2);
+				break;
+			}
+			// if culprit is HC Protestor
+			else if (culprit.getID() == IID_HARD_CORE_PROTESTER)
+			{
+				tempChar->decreaseHealth(2);
+				break;
+			}
+		
+		}
+
+	}
+
+}
+
 bool StudentWorld::noNeighbors(int x, int y)
 {
 	for (int h = 0; h < currentActors.size(); h++)
@@ -207,12 +262,15 @@ bool StudentWorld::hasIce(int x, int y)
 	return temp;
 }
 
-void StudentWorld::genNumOfItems()
+void StudentWorld::genNumOfRandomActors()
 {
 	int l = GameWorld::getLevel();
 	bouldersRemaining_ = min((l / 2) + 2, 9);
 	goldRemaining_ = max((5 - l) / 2, 2);
 	barrelsRemaining_ = min(2 + l, 21);
+
+	totalNumberOfProtestorsOnField_ = min(15, 2 + l * 1);
+	numberOfProtestors_ = 0;
 }
 
 void StudentWorld::populateBoulder(int num)
@@ -291,6 +349,7 @@ void StudentWorld::populateGoodies() {
 		}
 	}
 }
+
 void StudentWorld::populateWater(int l)
 {
 	for (int h = 0; h < 1; h++)
@@ -307,6 +366,23 @@ void StudentWorld::populateWater(int l)
 		else	// reset counter and find new random numbers
 			h--;
 	}
+}
+void StudentWorld::populateProtestor()
+{
+	int l = getLevel();
+
+	timeSinceLastProtestorAdd_--;
+	if (timeSinceLastProtestorAdd_ <= 0 && numberOfProtestors_ <= totalNumberOfProtestorsOnField_) {
+		RegularProtestor* testProt_ = new RegularProtestor(this, l);
+		currentActors.push_back(testProt_);
+		resetTimeSinceLastProtestorAdd(l);
+		numberOfProtestors_++;
+	}
+
+}
+void StudentWorld::resetTimeSinceLastProtestorAdd(int l)
+{
+	timeSinceLastProtestorAdd_ = max(25, 200 - l);
 }
 void StudentWorld::removeDeadGameObject()
 {
